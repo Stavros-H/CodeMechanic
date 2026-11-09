@@ -94,7 +94,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the app.
+Open the Replit Preview (or [http://localhost:5000](http://localhost:5000)
+when running locally) to view the Phase 1 foundations page.
+
+> This branch contains the Phase 1 database, validation, and asset-cleanup
+> foundations. It does not include the full game editor or other website
+> screens, and the preview does not connect to a Supabase project by default.
 
 ## 📋 Phase 1: Database & Auth Foundations
 

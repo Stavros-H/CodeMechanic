@@ -56,7 +56,7 @@ type FrameStateKey = z.infer<typeof FrameStateKey>;
 // ============================================================================
 // Sprite Schema
 // ============================================================================
-const Resolution = z.enum([16, 32, 64]);
+const Resolution = z.union([z.literal(16), z.literal(32), z.literal(64)]);
 
 type Resolution = z.infer<typeof Resolution>;
 
