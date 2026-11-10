@@ -60,7 +60,7 @@ codemechanic/
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20.9+
 - npm or yarn
 - Supabase account and project
 

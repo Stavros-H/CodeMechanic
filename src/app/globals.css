@@ -1,12 +1,15 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
 :root {
-  --ink: #1a2825;
-  --muted: #73807a;
-  --paper: #f8f8f3;
-  --line: #e5e8df;
-  --green: #b8f36a;
-  --dark: #182824;
+  color-scheme: dark;
+  --ink: #f3effa;
+  --muted: #aaa2bb;
+  --paper: #100d18;
+  --line: rgba(190, 165, 250, 0.16);
+  --accent: #bd91ff;
+  --dark: #191426;
+  --surface: #171321;
+  --surface-raised: #211a30;
 }
 
 * {
@@ -227,7 +230,7 @@ h1 > span {
 }
 
 .primary-link span {
-  color: var(--green);
+  color: var(--accent);
   font-size: 17px;
 }
 
@@ -257,9 +260,9 @@ h1 > span {
   width: 24px;
   height: 24px;
   place-items: center;
-  border: 1px solid rgba(184, 243, 106, 0.35);
+  border: 1px solid rgba(189, 145, 255, 0.4);
   border-radius: 5px;
-  color: var(--green);
+  color: var(--accent);
   font-size: 15px;
 }
 
@@ -294,7 +297,7 @@ h1 > span {
 
 .snapshot-row strong {
   font: 600 16px "Space Grotesk", sans-serif;
-  color: var(--green);
+  color: var(--accent);
 }
 
 .plus {
@@ -733,7 +736,7 @@ h1 > span {
   place-items: center;
   border-radius: 5px;
   background: var(--dark);
-  color: var(--green);
+  color: var(--accent);
 }
 
 .connection-note .section-kicker {
@@ -1022,4 +1025,246 @@ h1 > span {
   *::after {
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Dark violet theme: keep the Phase 1 overview readable without implying
+   that infrastructure files are already connected to a live backend. */
+.topbar {
+  background: rgba(16, 13, 24, 0.95);
+}
+
+.brand-mark span:nth-child(2),
+.brand-mark span:nth-child(3) {
+  background: var(--accent);
+}
+
+.brand-divider,
+.hero-bottom-line {
+  background: rgba(190, 165, 250, 0.2);
+}
+
+.brand-section,
+.top-nav,
+.eyebrow,
+.hero-bottom,
+.status-note,
+.status-branch,
+.migration-main p,
+.migration-row code,
+.file-state,
+.quiet-note,
+.schema-group-number,
+.function-callout small,
+.function-arrow,
+.footer > span,
+.back-top {
+  color: #a39ab4;
+}
+
+.top-nav a:hover,
+.back-top:hover,
+.branch-chevron,
+.section-kicker,
+.eyebrow-line,
+h1 > span {
+  color: var(--accent);
+}
+
+.eyebrow-line {
+  background: var(--accent);
+}
+
+.branch-chip {
+  border-color: rgba(189, 145, 255, 0.28);
+  background: rgba(189, 145, 255, 0.08);
+}
+
+.branch-dot,
+.status-indicator,
+.mini-status {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(189, 145, 255, 0.14);
+}
+
+.hero {
+  background:
+    radial-gradient(ellipse at 88% 8%, rgba(133, 87, 203, 0.2), transparent 42%),
+    var(--paper);
+}
+
+.hero::before {
+  border-color: rgba(189, 145, 255, 0.1);
+}
+
+.hero-description,
+.section-intro,
+.schema-panel > p,
+.storage-panel > p {
+  color: #aaa2bb;
+}
+
+.primary-link {
+  background: #302243;
+  color: #f7f2ff;
+}
+
+.primary-link:hover {
+  background: #403057;
+}
+
+.hero-card {
+  border-color: rgba(189, 145, 255, 0.18);
+  background:
+    radial-gradient(ellipse at 100% 100%, rgba(124, 76, 194, 0.18), transparent 50%),
+    #1a1427;
+  color: #f3effa;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+}
+
+.card-topline,
+.snapshot-subtitle,
+.snapshot-foot {
+  color: #aaa0bd;
+}
+
+.snapshot-row {
+  color: #ded6eb;
+}
+
+.card-decoration {
+  border-color: rgba(189, 145, 255, 0.12);
+}
+
+.status-strip {
+  border-color: var(--line);
+  background: #171321;
+}
+
+.status-copy strong {
+  color: #f2edfa;
+}
+
+.migration-index.mint,
+.migration-index.blue,
+.migration-index.pink,
+.migration-index.yellow,
+.migration-index.orange {
+  border: 1px solid rgba(189, 145, 255, 0.18);
+  background: rgba(189, 145, 255, 0.1);
+  color: #d0b5ff;
+}
+
+.file-state span {
+  background: var(--accent);
+}
+
+.migration-main h3,
+.schema-group h3,
+.function-callout strong {
+  color: #eee8f8;
+}
+
+.schema-tag {
+  border-color: rgba(190, 165, 250, 0.2);
+  background: #191526;
+  color: #c4bbd2;
+}
+
+.code-sample {
+  background: #1a1427;
+}
+
+.code-dot {
+  background: #8163ad;
+}
+
+.code-sample code {
+  color: #e8e0f3;
+}
+
+.code-muted {
+  color: #c3a0ff;
+}
+
+.storage-art {
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(143, 90, 214, 0.24), transparent 62%),
+    #191426;
+}
+
+.storage-grid {
+  background-image:
+    linear-gradient(rgba(190, 165, 250, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(190, 165, 250, 0.08) 1px, transparent 1px);
+}
+
+.storage-folder {
+  filter: drop-shadow(0 15px 16px rgba(5, 3, 12, 0.42));
+}
+
+.folder-tab {
+  background: #a77bea;
+}
+
+.folder-front {
+  border-color: rgba(224, 203, 255, 0.3);
+  background: linear-gradient(145deg, #c49cff, #9164d4);
+}
+
+.folder-spark,
+.folder-label {
+  color: #27163f;
+}
+
+.storage-floating {
+  border-color: rgba(190, 165, 250, 0.25);
+  background: rgba(30, 23, 44, 0.9);
+  color: #d3c0f0;
+}
+
+.storage-cross {
+  color: #b38aef;
+}
+
+.function-callout {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.function-icon {
+  background: rgba(189, 145, 255, 0.14);
+  color: #d1b5ff;
+}
+
+.function-arrow {
+  color: #b3a2ca;
+}
+
+.connection-note {
+  border-color: rgba(189, 145, 255, 0.22);
+  background:
+    linear-gradient(110deg, rgba(113, 73, 169, 0.14), transparent 78%),
+    #171321;
+}
+
+.connection-icon {
+  background: #302243;
+  color: #d2b5ff;
+}
+
+.connection-note p {
+  color: #aaa2bb;
+}
+
+.connection-file {
+  color: #d0c2e3;
+}
+
+.file-glyph {
+  color: #c2a2f2;
+}
+
+.file-pill {
+  border-color: rgba(190, 165, 250, 0.24);
+  color: #b9a9d0;
 }

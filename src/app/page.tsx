@@ -64,7 +64,7 @@ export default function Home() {
           </span>
           <span>CodeMechanic</span>
           <span className="brand-divider" />
-          <span className="brand-section">Build notes</span>
+          <span className="brand-section">Phase 1 preview</span>
         </a>
         <nav className="top-nav" aria-label="Main navigation">
           <a href="#foundation">Foundation</a>
