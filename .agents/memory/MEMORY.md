@@ -1,0 +1,1 @@
+- [CodeMechanic product brief](codemechanic-product-brief.md) — Treat the supplied architecture and phased roadmap as the product source of truth; preserve the decoupled React/Zustand/Phaser design and its safety rules.
