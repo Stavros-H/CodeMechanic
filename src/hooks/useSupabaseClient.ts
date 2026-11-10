@@ -8,8 +8,9 @@ const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
  * Custom hook to create and memoize Supabase client
  * Can be used throughout the application for database operations
  */
-export function useSupabaseClient(): SupabaseClient {
+export function useSupabaseClient(): SupabaseClient | null {
   const supabaseClient = useMemo(() => {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
     return createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }, []);
 
@@ -19,6 +20,10 @@ export function useSupabaseClient(): SupabaseClient {
 /**
  * Get Supabase client without React hook (for non-component contexts)
  */
-export function getSupabaseClient(): SupabaseClient {
+export function getSupabaseClient(): SupabaseClient | null {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
   return createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
+
+export const SUPABASE_NOT_CONFIGURED_MESSAGE =
+  'Sign-in is unavailable because Supabase is not configured for this preview.';

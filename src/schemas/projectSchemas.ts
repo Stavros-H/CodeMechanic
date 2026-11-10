@@ -273,7 +273,10 @@ const ProjectSchema = z.object({
   updated_at: z.string().datetime().optional(),
 });
 
-type Project = z.infer<typeof ProjectSchema>;
+// Local guest drafts/remixes do not have an owner until they are saved.
+type Project = Omit<z.infer<typeof ProjectSchema>, "author_id"> & {
+  author_id: string | null;
+};
 
 // Schema for creating a new project (without server-generated fields)
 const CreateProjectSchema = ProjectSchema.omit({

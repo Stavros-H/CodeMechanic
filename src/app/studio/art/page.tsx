@@ -318,7 +318,7 @@ export default function PixelHitboxStudio() {
                       <div key={state} className="animation-item">
                         <span className="animation-name">{state}</span>
                         <span className="frame-count">
-                          {selectedSprite.frames[state as keyof typeof selectedSprite.frames].length} frames
+                          {selectedSprite.frames[state as keyof typeof selectedSprite.frames]?.length ?? 0} frames
                         </span>
                       </div>
                     ))}

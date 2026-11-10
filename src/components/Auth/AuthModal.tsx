@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useGameStore } from '@/store/useGameStore';
-import { useSupabaseClient } from '@/hooks/useSupabaseClient';
+import { SUPABASE_NOT_CONFIGURED_MESSAGE, useSupabaseClient } from '@/hooks/useSupabaseClient';
 import { Profile, CreateProject } from '@/schemas/projectSchemas';
 
 // ============================================================================
@@ -19,7 +19,7 @@ const PROVIDERS = [
   { id: 'github', name: 'GitHub', icon: 'github' },
   { id: 'google', name: 'Google', icon: 'google' },
   { id: 'discord', name: 'Discord', icon: 'discord' },
-];
+] as const;
 
 // ============================================================================
 // Components
@@ -49,14 +49,7 @@ export function AuthModal() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Sync mode with auth state
-  useEffect(() => {
-    if (isAuthenticated) {
-      setMode('profile');
-    } else {
-      setMode('login');
-    }
-  }, [isAuthenticated]);
+  const visibleMode: AuthMode = isAuthenticated ? 'profile' : mode;
 
   // Close modal
   const closeModal = () => {
@@ -69,7 +62,12 @@ export function AuthModal() {
   };
 
   // Handle OAuth login
-  const handleOAuthLogin = async (provider: string) => {
+  const handleOAuthLogin = async (provider: (typeof PROVIDERS)[number]['id']) => {
+    if (!supabase) {
+      setError(SUPABASE_NOT_CONFIGURED_MESSAGE);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -90,7 +88,7 @@ export function AuthModal() {
       if (authError) {
         setError(authError.message);
       } else if (data.url) {
-        window.location.href = data.url;
+        window.location.assign(data.url);
       }
     } catch (err) {
       setError('Failed to authenticate. Please try again.');
@@ -102,6 +100,11 @@ export function AuthModal() {
   // Handle email/password login
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) {
+      setError(SUPABASE_NOT_CONFIGURED_MESSAGE);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -144,6 +147,11 @@ export function AuthModal() {
   // Handle email/password signup
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) {
+      setError(SUPABASE_NOT_CONFIGURED_MESSAGE);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -189,6 +197,11 @@ export function AuthModal() {
 
   // Handle logout
   const handleLogout = async () => {
+    if (!supabase) {
+      setError(SUPABASE_NOT_CONFIGURED_MESSAGE);
+      return;
+    }
+
     setIsLoading(true);
     try {
       await supabase.auth.signOut();
@@ -289,7 +302,7 @@ export function AuthModal() {
         className="btn btn-ghost btn-block"
         onClick={toggleMode}
       >
-        Don't have an account? Sign Up
+        Don&apos;t have an account? Sign Up
       </button>
     </form>
   );
@@ -381,9 +394,9 @@ export function AuthModal() {
       <div className="modal auth-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>
-            {mode === 'login' && 'Sign In'}
-            {mode === 'signup' && 'Create Account'}
-            {mode === 'profile' && 'Your Profile'}
+            {visibleMode === 'login' && 'Sign In'}
+            {visibleMode === 'signup' && 'Create Account'}
+            {visibleMode === 'profile' && 'Your Profile'}
           </h2>
           <button className="modal-close" onClick={closeModal}>
             ×
@@ -427,9 +440,9 @@ export function AuthModal() {
           </div>
 
           {/* Email/Password Forms */}
-          {mode === 'login' && renderLoginForm()}
-          {mode === 'signup' && renderSignupForm()}
-          {mode === 'profile' && renderProfileView()}
+          {visibleMode === 'login' && renderLoginForm()}
+          {visibleMode === 'signup' && renderSignupForm()}
+          {visibleMode === 'profile' && renderProfileView()}
         </div>
       </div>
     </div>

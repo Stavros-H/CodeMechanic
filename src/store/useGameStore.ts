@@ -278,7 +278,7 @@ export const useGameStore = create<GameStore>()(
         const { id, author_id, created_at, updated_at, play_count, like_count, ...rest } = sourceProject;
         
         // Create a new client-side UUID for the remix
-        const remixId = crypto.randomUUID || (() => Math.random().toString(36).substring(2, 11))();
+        const remixId = crypto.randomUUID();
         
         // Clone the project into Zustand state WITHOUT database write
         const remixedProject: Project = {

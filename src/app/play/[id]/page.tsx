@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useGameStore } from '@/store/useGameStore';
 import { AuthModal, SaveModal } from '@/components';
+import { useGuardedNavigation } from '@/hooks/useUnsavedChangesGuard';
 
 // ============================================================================
 // View 3: Interactive Playtest Arena
@@ -11,7 +12,7 @@ import { AuthModal, SaveModal } from '@/components';
 
 export default function PlaytestArena() {
   const params = useParams();
-  const router = useRouter();
+  const { navigateTo } = useGuardedNavigation();
   const { setActiveTab, isSaveModalOpen, setIsSaveModalOpen } = useGameStore();
   const projectId = params?.id as string;
 
@@ -56,12 +57,12 @@ export default function PlaytestArena() {
 
   // Handle edit in studio
   const handleEditInStudio = () => {
-    router.push(`/studio/art?edit=${projectId}`);
+    navigateTo(`/studio/art?edit=${projectId}`);
   };
 
   // Handle back to hub
   const handleBackToHub = () => {
-    router.push('/');
+    navigateTo('/');
   };
 
   // Render win/loss overlay

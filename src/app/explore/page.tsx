@@ -1,17 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/useGameStore';
 import { AuthModal, SaveModal } from '@/components';
 import { GameGenre } from '@/types';
+import { useGuardedNavigation } from '@/hooks/useUnsavedChangesGuard';
 
 // ============================================================================
 // View 2: Genre & Template Directory
 // ============================================================================
 
 export default function ExploreDirectory() {
-  const router = useRouter();
+  const { navigateTo } = useGuardedNavigation();
   const { setActiveTab, isSaveModalOpen, setIsSaveModalOpen } = useGameStore();
 
   // Set active tab on mount
@@ -149,7 +149,7 @@ export default function ExploreDirectory() {
           <div className="explore-actions">
             <button
               className="btn btn-primary"
-              onClick={() => router.push('/studio/art')}
+              onClick={() => navigateTo('/studio/art')}
             >
               <span className="btn-icon">+</span>
               <span>Create New Project</span>
@@ -218,13 +218,13 @@ export default function ExploreDirectory() {
                 <div className="project-actions">
                   <button
                     className="btn btn-small"
-                    onClick={() => router.push(`/play/${project.id}`)}
+                    onClick={() => navigateTo(`/play/${project.id}`)}
                   >
                     Play
                   </button>
                   <button
                     className="btn btn-small btn-outline"
-                    onClick={() => router.push(`/studio/art?remix=${project.id}`)}
+                    onClick={() => navigateTo(`/studio/art?remix=${project.id}`)}
                   >
                     Remix
                   </button>

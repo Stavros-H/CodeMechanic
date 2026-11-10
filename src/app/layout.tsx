@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./views.css";
-import { Navbar, AuthModal, SaveModal } from '@/components';
-import { useGameStore } from '@/store/useGameStore';
-import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
+import AppShell from './AppShell';
 
 // ============================================================================
 // Metadata
@@ -29,46 +27,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { continueNavigation } = useUnsavedChangesGuard();
-  const {
-    isSaveModalOpen,
-    setIsSaveModalOpen,
-    markClean,
-    clearProject,
-  } = useGameStore();
-
-  // Handle save modal actions
-  const handleSaveAndContinue = () => {
-    markClean();
-    setIsSaveModalOpen(false);
-    continueNavigation(true);
-  };
-
-  const handleDiscardChanges = () => {
-    clearProject();
-    setIsSaveModalOpen(false);
-    continueNavigation(false);
-  };
-
-  const handleCancel = () => {
-    setIsSaveModalOpen(false);
-  };
-
   return (
     <html lang="en">
       <body>
-        <Navbar />
-        <main>{children}</main>
-        
-        {/* Modals */}
-        <AuthModal />
-        {isSaveModalOpen && (
-          <SaveModal
-            onSave={handleSaveAndContinue}
-            onDiscard={handleDiscardChanges}
-            onCancel={handleCancel}
-          />
-        )}
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

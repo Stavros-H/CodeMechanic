@@ -1,16 +1,16 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/useGameStore';
 import { AuthModal, SaveModal } from '@/components';
+import { useGuardedNavigation } from '@/hooks/useUnsavedChangesGuard';
 
 // ============================================================================
 // My Projects Page
 // ============================================================================
 
 export default function MyProjects() {
-  const router = useRouter();
+  const { navigateTo } = useGuardedNavigation();
   const { setActiveTab, isSaveModalOpen, setIsSaveModalOpen } = useGameStore();
 
   // Set active tab on mount
@@ -77,7 +77,7 @@ export default function MyProjects() {
           </div>
           <button
             className="btn btn-primary"
-            onClick={() => router.push('/studio/art')}
+            onClick={() => navigateTo('/studio/art')}
           >
             <span className="btn-icon">+</span>
             <span>Create New Project</span>
@@ -101,19 +101,19 @@ export default function MyProjects() {
                 <div className="project-actions">
                   <button
                     className="action-btn"
-                    onClick={() => router.push(`/play/${project.id}`)}
+                    onClick={() => navigateTo(`/play/${project.id}`)}
                   >
                     Play
                   </button>
                   <button
                     className="action-btn"
-                    onClick={() => router.push(`/studio/art?edit=${project.id}`)}
+                    onClick={() => navigateTo(`/studio/art?edit=${project.id}`)}
                   >
                     Edit
                   </button>
                   <button
                     className="action-btn"
-                    onClick={() => router.push(`/studio/rules?edit=${project.id}`)}
+                    onClick={() => navigateTo(`/studio/rules?edit=${project.id}`)}
                   >
                     Configure
                   </button>
@@ -133,7 +133,7 @@ export default function MyProjects() {
             <p>Create your first game project to get started!</p>
             <button
               className="btn btn-primary"
-              onClick={() => router.push('/studio/art')}
+              onClick={() => navigateTo('/studio/art')}
             >
               <span className="btn-icon">+</span>
               <span>Create New Project</span>

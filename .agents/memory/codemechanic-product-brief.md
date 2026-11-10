@@ -78,10 +78,3 @@ Implement phases in order and use their acceptance criteria rather than treating
 6. **Hub, Directory, and seeds:** community browsing/filtering, playtest polish, and all eight playable/remixable blueprints.
 7. **Safety and launch:** performance warnings, keyboard rollover validation, end-to-end QA, and production deployment.
 
-## Current project context
-
-The imported branch is `vibe/phase1-db-auth`; it includes Phase 1 source foundations but not the five product views, Phaser scenes, auth UI, or working Supabase connection. The current root page is a static Phase 1 status/overview page for preview, not View 1 (the Arcade Hub) and not proof that Phase 1 services have been deployed.
-
-**Why:** The user asked not to build the full website yet, but did ask for the present preview changes to be reviewed and themed.
-
-**How to apply:** Keep the current page accurately labeled as an infrastructure preview. Do not present it as the finished CodeMechanic app or claim that the full site is present in this branch.

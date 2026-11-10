@@ -1,16 +1,16 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/useGameStore';
 import { AuthModal, SaveModal } from '@/components';
+import { useGuardedNavigation } from '@/hooks/useUnsavedChangesGuard';
 
 // ============================================================================
 // View 1: Arcade Hub & Dashboard
 // ============================================================================
 
 export default function ArcadeHub() {
-  const router = useRouter();
+  const { navigateTo } = useGuardedNavigation();
   const { setActiveTab, isSaveModalOpen, setIsSaveModalOpen } = useGameStore();
 
   // Set active tab on mount
@@ -62,14 +62,14 @@ export default function ArcadeHub() {
             <div className="hero-actions">
               <button
                 className="btn btn-primary btn-large"
-                onClick={() => router.push('/studio/art')}
+                onClick={() => navigateTo('/studio/art')}
               >
                 <span className="btn-icon">+</span>
                 <span>Create New Project</span>
               </button>
               <button
                 className="btn btn-secondary btn-large"
-                onClick={() => router.push('/explore')}
+                onClick={() => navigateTo('/explore')}
               >
                 <span className="btn-icon">🔍</span>
                 <span>Explore Templates</span>
@@ -106,7 +106,7 @@ export default function ArcadeHub() {
                 </div>
                 <button
                   className="btn btn-small"
-                  onClick={() => router.push(blueprint.href)}
+                  onClick={() => navigateTo(blueprint.href)}
                 >
                   Play
                 </button>
@@ -133,7 +133,7 @@ export default function ArcadeHub() {
                 </div>
                 <button
                   className="btn btn-small btn-outline"
-                  onClick={() => router.push('/explore')}
+                  onClick={() => navigateTo('/explore')}
                 >
                   View
                 </button>

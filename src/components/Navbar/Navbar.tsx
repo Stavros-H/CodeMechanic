@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useGameStore } from '@/store/useGameStore';
-import { useSupabaseClient } from '@/hooks/useSupabaseClient';
+import { SUPABASE_NOT_CONFIGURED_MESSAGE, useSupabaseClient } from '@/hooks/useSupabaseClient';
 import { Profile } from '@/schemas/projectSchemas';
 
 // ============================================================================
@@ -46,7 +46,7 @@ export function Navbar() {
   } = useGameStore();
   
   const [isScrolled, setIsScrolled] = useState(false);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const profileImage = user?.avatar_url ?? null;
 
   // Handle scroll effect
   useEffect(() => {
@@ -58,15 +58,14 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Load profile image
-  useEffect(() => {
-    if (user?.avatar_url) {
-      setProfileImage(user.avatar_url);
-    }
-  }, [user]);
-
   // Handle login
   const handleLogin = async () => {
+    if (!supabase) {
+      setAuthError(SUPABASE_NOT_CONFIGURED_MESSAGE);
+      setIsAuthModalOpen(true);
+      return;
+    }
+
     setAuthLoading(true);
     setAuthError(null);
     
@@ -92,6 +91,11 @@ export function Navbar() {
 
   // Handle logout
   const handleLogout = async () => {
+    if (!supabase) {
+      setAuthError(SUPABASE_NOT_CONFIGURED_MESSAGE);
+      return;
+    }
+
     setAuthLoading(true);
     try {
       await supabase.auth.signOut();
