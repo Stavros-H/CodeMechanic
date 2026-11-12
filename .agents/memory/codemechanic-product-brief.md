@@ -55,12 +55,16 @@ Login, signup, and account settings are separate from the five domain views.
 
 ## Data, permissions, and operational limits
 
-- Supabase provides PostgreSQL, Auth, Storage, and Edge Functions. Core records are profiles, projects, and project likes; projects hold `project_data` JSONB, including sprites, levels, mechanics, economy, and audio configuration.
+- The source documents specified Supabase, but the user chose Clerk Auth plus Replit-managed PostgreSQL instead. Keep profiles, projects, project likes, and JSONB `project_data`; use Clerk user IDs and enforce ownership in server-side API routes. Do not reintroduce Supabase unless the user changes this decision.
 - Anyone may browse/play published projects. Only authenticated owners may create/update/delete their projects. Likes require authentication and must prevent duplicate user/project pairs.
 - Apply the project-data payload ceiling of 2 MB, sprite PNG limit of 500 KB, account storage quota of 20 MB, and save rate limit of 60 requests/minute per auth token.
-- On project deletion, remove its sprite blobs through `delete-project-assets` before deleting the database row; relational cascades then clear likes. Do not claim the Edge Function, migrations, bucket, or auth are deployed merely because source files exist.
+- Sprite file storage is not configured yet. When added, delete a project's sprite blobs before deleting its database row; relational cascades should clear likes. Do not claim storage is configured until it is actually set up.
 - The database play counter should use an atomic increment function.
 - Show non-blocking performance warnings above 150 active entities, over 64×64 tiles, or 15 MB uncompressed asset memory.
+
+**Why:** The user was unfamiliar with Supabase and chose an in-app Clerk login backed by Replit's managed database; no live Supabase project or data existed.
+
+**How to apply:** Continue with Clerk and Replit PostgreSQL for auth/profile/project work. Preserve the product's ownership, payload, and storage limits while adapting provider-specific mechanics.
 
 ## Official seed blueprints
 

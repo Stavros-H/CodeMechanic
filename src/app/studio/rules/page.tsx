@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/useGameStore';
-import { AuthModal, SaveModal } from '@/components';
 import { GameGenre, WinConditionType, MovementProfile, TargetRule, AttackStyle } from '@/types';
 
 // ============================================================================
@@ -11,13 +9,10 @@ import { GameGenre, WinConditionType, MovementProfile, TargetRule, AttackStyle }
 // ============================================================================
 
 export default function MechanicsRuleConfigurator() {
-  const router = useRouter();
   const {
     currentProject,
     setActiveTab,
     setIsDirty,
-    isSaveModalOpen,
-    setIsSaveModalOpen,
   } = useGameStore();
 
   // Set active tab on mount
@@ -28,37 +23,12 @@ export default function MechanicsRuleConfigurator() {
   // Local state for form inputs
   const [activeTab, setActiveTabLocal] = useState<'physics' | 'ai' | 'economy' | 'level'>('physics');
 
-  // Handle save and continue
-  const handleSaveAndContinue = () => {
-    setIsSaveModalOpen(false);
-    setIsDirty(false);
-  };
-
-  // Handle discard changes
-  const handleDiscardChanges = () => {
-    setIsSaveModalOpen(false);
-    setIsDirty(false);
-  };
-
-  // Handle cancel
-  const handleCancel = () => {
-    setIsSaveModalOpen(false);
-  };
-
   // Get mechanics config from current project
   const mechanicsConfig = currentProject?.project_data.mechanics_config;
   const economyConfig = currentProject?.project_data.economy_config;
 
   return (
     <>
-      {/* Modals */}
-      <AuthModal />
-      <SaveModal
-        onSave={handleSaveAndContinue}
-        onDiscard={handleDiscardChanges}
-        onCancel={handleCancel}
-      />
-
       {/* Mechanics & Rule Configurator Content */}
       <div className="view-container view-studio view-rules">
         <div className="config-layout">

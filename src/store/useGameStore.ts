@@ -22,7 +22,6 @@ type GameState = {
 };
 
 type UIState = {
-  isAuthModalOpen: boolean;
   isSaveModalOpen: boolean;
   isRemixModalOpen: boolean;
 };
@@ -55,7 +54,6 @@ type ActionTypes = {
   setAuthError: (error: string | null) => void;
   
   // UI actions
-  setIsAuthModalOpen: (isOpen: boolean) => void;
   setIsSaveModalOpen: (isOpen: boolean) => void;
   setIsRemixModalOpen: (isOpen: boolean) => void;
   
@@ -88,7 +86,6 @@ const initialGameState: GameState = {
 };
 
 const initialUIState: UIState = {
-  isAuthModalOpen: false,
   isSaveModalOpen: false,
   isRemixModalOpen: false,
 };
@@ -204,7 +201,6 @@ export const useGameStore = create<GameStore>()(
           isAuthenticated: true,
           isLoading: false,
           error: null,
-          isAuthModalOpen: false,
         });
       },
 
@@ -212,13 +208,9 @@ export const useGameStore = create<GameStore>()(
         set({
           user: null,
           isAuthenticated: false,
-          currentProject: null,
-          isDirty: false,
-          activeTab: 'hub',
-          activeEntityId: null,
-          remixSourceId: null,
+          isLoading: false,
+          error: null,
         });
-        localStorage.removeItem(GUEST_DRAFT_KEY);
       },
 
       setAuthLoading: (isLoading) => {
@@ -232,10 +224,6 @@ export const useGameStore = create<GameStore>()(
       // ========================================================================
       // UI Actions
       // ========================================================================
-
-      setIsAuthModalOpen: (isOpen) => {
-        set({ isAuthModalOpen: isOpen });
-      },
 
       setIsSaveModalOpen: (isOpen) => {
         set({ isSaveModalOpen: isOpen });

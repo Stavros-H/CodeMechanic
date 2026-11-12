@@ -261,7 +261,7 @@ const ProjectSchema = z.object({
   title: z.string().min(1).max(100),
   description: z.string().max(500).optional().default(""),
   genre: Genre,
-  author_id: z.string().uuid(),
+  author_id: z.string().min(1),
   is_published: z.boolean().default(false),
   is_template: z.boolean().default(false),
   remixed_from_id: z.string().uuid().nullable().optional(),
@@ -307,8 +307,8 @@ type UpdateProject = z.infer<typeof UpdateProjectSchema>;
 // Profile Schema
 // ============================================================================
 const ProfileSchema = z.object({
-  id: z.string().uuid(),
-  username: z.string().min(3).max(50),
+  id: z.string().min(1),
+  username: z.string().min(1).max(50),
   avatar_url: z.string().url().optional(),
   created_at: z.string().datetime().optional(),
 });

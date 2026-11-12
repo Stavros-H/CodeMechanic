@@ -1,5 +1,10 @@
 # Phase 1: DB & Auth Foundations - Implementation Summary
 
+> Historical snapshot of the original Supabase plan. The current app uses
+> Clerk Auth and Replit PostgreSQL instead; this file does not confirm that
+> any Supabase service was deployed. The current database schema is
+> `src/db/schema.sql`.
+
 ## ✅ Overview
 
 Phase 1 establishes the **persistent cloud data layer, SQL tables, RLS security policies, and asset storage pipeline on Supabase** as specified in the Technical Build & Execution Roadmap.

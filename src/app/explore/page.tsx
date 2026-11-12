@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useGameStore } from '@/store/useGameStore';
-import { AuthModal, SaveModal } from '@/components';
 import { GameGenre } from '@/types';
 import { useGuardedNavigation } from '@/hooks/useUnsavedChangesGuard';
 
@@ -12,7 +11,7 @@ import { useGuardedNavigation } from '@/hooks/useUnsavedChangesGuard';
 
 export default function ExploreDirectory() {
   const { navigateTo } = useGuardedNavigation();
-  const { setActiveTab, isSaveModalOpen, setIsSaveModalOpen } = useGameStore();
+  const { setActiveTab } = useGameStore();
 
   // Set active tab on mount
   useEffect(() => {
@@ -114,31 +113,8 @@ export default function ExploreDirectory() {
     return 0; // Date sorting would use created_at in real implementation
   });
 
-  // Handle save and continue
-  const handleSaveAndContinue = () => {
-    setIsSaveModalOpen(false);
-  };
-
-  // Handle discard changes
-  const handleDiscardChanges = () => {
-    setIsSaveModalOpen(false);
-  };
-
-  // Handle cancel
-  const handleCancel = () => {
-    setIsSaveModalOpen(false);
-  };
-
   return (
     <>
-      {/* Modals */}
-      <AuthModal />
-      <SaveModal
-        onSave={handleSaveAndContinue}
-        onDiscard={handleDiscardChanges}
-        onCancel={handleCancel}
-      />
-
       {/* Explore Directory Content */}
       <div className="view-container view-explore">
         <section className="explore-header">

@@ -10,13 +10,14 @@ type SaveModalProps = {
   onSave: () => void;
   onDiscard: () => void;
   onCancel: () => void;
+  error?: string | null;
 };
 
 // ============================================================================
 // Component
 // ============================================================================
 
-export function SaveModal({ onSave, onDiscard, onCancel }: SaveModalProps) {
+export function SaveModal({ onSave, onDiscard, onCancel, error }: SaveModalProps) {
   const { isSaveModalOpen } = useGameStore();
 
   if (!isSaveModalOpen) return null;
@@ -31,6 +32,7 @@ export function SaveModal({ onSave, onDiscard, onCancel }: SaveModalProps) {
           </button>
         </div>
         <div className="modal-body">
+          {error && <p className="alert alert-error" role="alert">{error}</p>}
           <p>
             You have unsaved changes. What would you like to do?
           </p>

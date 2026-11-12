@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useGameStore } from '@/store/useGameStore';
-import { AuthModal, SaveModal } from '@/components';
 import { useGuardedNavigation } from '@/hooks/useUnsavedChangesGuard';
 
 // ============================================================================
@@ -13,28 +12,13 @@ import { useGuardedNavigation } from '@/hooks/useUnsavedChangesGuard';
 export default function PlaytestArena() {
   const params = useParams();
   const { navigateTo } = useGuardedNavigation();
-  const { setActiveTab, isSaveModalOpen, setIsSaveModalOpen } = useGameStore();
+  const { setActiveTab } = useGameStore();
   const projectId = params?.id as string;
 
   // Set active tab on mount
   useEffect(() => {
     setActiveTab('play');
   }, [setActiveTab]);
-
-  // Handle save and continue
-  const handleSaveAndContinue = () => {
-    setIsSaveModalOpen(false);
-  };
-
-  // Handle discard changes
-  const handleDiscardChanges = () => {
-    setIsSaveModalOpen(false);
-  };
-
-  // Handle cancel
-  const handleCancel = () => {
-    setIsSaveModalOpen(false);
-  };
 
   // Handle win/loss state
   const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost' | 'paused'>('playing');
@@ -88,14 +72,6 @@ export default function PlaytestArena() {
 
   return (
     <>
-      {/* Modals */}
-      <AuthModal />
-      <SaveModal
-        onSave={handleSaveAndContinue}
-        onDiscard={handleDiscardChanges}
-        onCancel={handleCancel}
-      />
-
       {/* Playtest Arena Content */}
       <div className="view-container view-play">
         {/* Debug Bar */}

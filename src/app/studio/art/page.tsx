@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/useGameStore';
-import { AuthModal, SaveModal } from '@/components';
 import { EntityRole, Resolution, Sprite } from '@/schemas/projectSchemas';
 
 // ============================================================================
@@ -11,14 +9,10 @@ import { EntityRole, Resolution, Sprite } from '@/schemas/projectSchemas';
 // ============================================================================
 
 export default function PixelHitboxStudio() {
-  const router = useRouter();
   const {
     currentProject,
     setActiveTab,
     setIsDirty,
-    isSaveModalOpen,
-    setIsSaveModalOpen,
-    remixProject,
   } = useGameStore();
 
   // Set active tab on mount
@@ -43,23 +37,6 @@ export default function PixelHitboxStudio() {
     { label: 'Environment', roles: ['tile'] as EntityRole[] },
   ];
 
-  // Handle save and continue
-  const handleSaveAndContinue = () => {
-    setIsSaveModalOpen(false);
-    setIsDirty(false);
-  };
-
-  // Handle discard changes
-  const handleDiscardChanges = () => {
-    setIsSaveModalOpen(false);
-    setIsDirty(false);
-  };
-
-  // Handle cancel
-  const handleCancel = () => {
-    setIsSaveModalOpen(false);
-  };
-
   // Create new sprite
   const handleCreateSprite = () => {
     // In a real implementation, this would create a new sprite
@@ -80,14 +57,6 @@ export default function PixelHitboxStudio() {
 
   return (
     <>
-      {/* Modals */}
-      <AuthModal />
-      <SaveModal
-        onSave={handleSaveAndContinue}
-        onDiscard={handleDiscardChanges}
-        onCancel={handleCancel}
-      />
-
       {/* New Sprite Modal */}
       {showNewSpriteModal && (
         <div className="modal-overlay" onClick={() => setShowNewSpriteModal(false)}>

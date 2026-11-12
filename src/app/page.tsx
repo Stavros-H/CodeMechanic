@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { useGameStore } from '@/store/useGameStore';
-import { AuthModal, SaveModal } from '@/components';
 import { useGuardedNavigation } from '@/hooks/useUnsavedChangesGuard';
 
 // ============================================================================
@@ -11,40 +10,15 @@ import { useGuardedNavigation } from '@/hooks/useUnsavedChangesGuard';
 
 export default function ArcadeHub() {
   const { navigateTo } = useGuardedNavigation();
-  const { setActiveTab, isSaveModalOpen, setIsSaveModalOpen } = useGameStore();
+  const { setActiveTab } = useGameStore();
 
   // Set active tab on mount
   useEffect(() => {
     setActiveTab('hub');
   }, [setActiveTab]);
 
-  // Handle save and continue
-  const handleSaveAndContinue = () => {
-    setIsSaveModalOpen(false);
-    // Save logic would go here
-  };
-
-  // Handle discard changes
-  const handleDiscardChanges = () => {
-    setIsSaveModalOpen(false);
-    // Clear project logic would go here
-  };
-
-  // Handle cancel
-  const handleCancel = () => {
-    setIsSaveModalOpen(false);
-  };
-
   return (
     <>
-      {/* Modals */}
-      <AuthModal />
-      <SaveModal
-        onSave={handleSaveAndContinue}
-        onDiscard={handleDiscardChanges}
-        onCancel={handleCancel}
-      />
-
       {/* Arcade Hub Content */}
       <div className="view-container view-hub">
         <section className="hero-section">
