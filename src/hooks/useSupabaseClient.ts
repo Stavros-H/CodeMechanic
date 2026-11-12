@@ -26,4 +26,4 @@ export function getSupabaseClient(): SupabaseClient | null {
 }
 
 export const SUPABASE_NOT_CONFIGURED_MESSAGE =
-  'Sign-in is unavailable because Supabase is not configured for this preview.';
+  'Supabase is not configured. To enable authentication, please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env file. Get these values from your Supabase project dashboard at https://app.supabase.com';
