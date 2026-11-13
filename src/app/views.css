@@ -638,21 +638,21 @@
 }
 
 /* Sprite Backpack */
-.sprite-backpack {
+.sprite-library {
   background: var(--surface);
   border-right: 1px solid var(--line);
   padding: 1.5rem;
   overflow-y: auto;
 }
 
-.backpack-header {
+.library-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
 }
 
-.backpack-header h2 {
+.library-header h2 {
   margin: 0;
   font-size: 1.1rem;
 }
@@ -1529,7 +1529,7 @@
     grid-template-columns: 1fr;
   }
 
-  .sprite-backpack,
+  .sprite-library,
   .properties-panel {
     border: none;
     border-bottom: 1px solid var(--line);

@@ -20,7 +20,7 @@ export default function PixelHitboxStudio() {
     setActiveTab('art');
   }, [setActiveTab]);
 
-  // State for Sprite Backpack
+  // State for Sprite Library
   const [activeEntity, setActiveEntity] = useState<EntityRole>('player_1');
   const [selectedSprite, setSelectedSprite] = useState<Sprite | null>(null);
   const [showNewSpriteModal, setShowNewSpriteModal] = useState(false);
@@ -131,10 +131,10 @@ export default function PixelHitboxStudio() {
       {/* Pixel & Hitbox Studio Content */}
       <div className="view-container view-studio view-art">
         <div className="studio-layout">
-          {/* Sprite Backpack Sidebar */}
-          <aside className="sprite-backpack">
-            <div className="backpack-header">
-              <h2>Sprite Backpack</h2>
+          {/* Sprite Library Sidebar */}
+          <aside className="sprite-library">
+            <div className="library-header">
+              <h2>Sprite Library</h2>
               <button
                 className="btn btn-small btn-primary"
                 onClick={() => setShowNewSpriteModal(true)}

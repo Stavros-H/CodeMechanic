@@ -33,7 +33,7 @@ export type ToastMessage = {
   duration?: number;
 };
 
-// Entity types for the Sprite Backpack
+// Entity types for the Sprite Library
 export type EntityType = 
   | 'player_1' 
   | 'player_2' 
