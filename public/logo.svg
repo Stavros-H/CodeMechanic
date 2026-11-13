@@ -1,6 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect x="7" y="7" width="22" height="22" rx="5" fill="#bd91ff"/>
-  <rect x="35" y="7" width="22" height="22" rx="5" fill="#94d953"/>
-  <rect x="7" y="35" width="22" height="22" rx="5" fill="#94d953"/>
-  <rect x="35" y="35" width="22" height="22" rx="5" fill="#bd91ff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- CodeMechanic Logo - Wrench made of code -->
+  
+  <!-- Background square (invisible) -->
+  <rect width="200" height="200" fill="none"/>
+  
+  <!-- Wrench Handle - Vertical bar made of equal signs -->
+  <rect x="85" y="40" width="30" height="120" rx="5" fill="#bd91ff"/>
+  <text x="100" y="60" font-size="14" font-family="'Courier New', monospace" fill="#171321" text-anchor="middle" font-weight="bold">=</text>
+  <text x="100" y="78" font-size="14" font-family="'Courier New', monospace" fill="#171321" text-anchor="middle" font-weight="bold">=</text>
+  <text x="100" y="96" font-size="14" font-family="'Courier New', monospace" fill="#171321" text-anchor="middle" font-weight="bold">=</text>
+  <text x="100" y="114" font-size="14" font-family="'Courier New', monospace" fill="#171321" text-anchor="middle" font-weight="bold">=</text>
+  <text x="100" y="132" font-size="14" font-family="'Courier New', monospace" fill="#171321" text-anchor="middle" font-weight="bold">=</text>
+  <text x="100" y="150" font-size="14" font-family="'Courier New', monospace" fill="#171321" text-anchor="middle" font-weight="bold">=</text>
+  
+  <!-- Wrench Head - Made of curly braces -->
+  <path d="M50 40 Q40 30 30 40 L30 80 Q40 90 50 80 L50 120 Q40 130 30 120 L30 160 Q40 170 50 160 L50 180 Q60 190 70 180 L130 180 Q140 190 150 180 L150 160 Q160 170 170 160 L170 120 Q160 130 150 120 L150 80 Q160 90 170 80 L170 40 Q160 30 150 40 Z" 
+        fill="#bd91ff" stroke="#f3effa" stroke-width="1"/>
+  
+  <!-- Code symbols inside wrench head -->
+  <text x="55" y="55" font-size="12" font-family="'Courier New', monospace" fill="#171321" font-weight="bold">{</text>
+  <text x="65" y="55" font-size="12" font-family="'Courier New', monospace" fill="#171321" font-weight="bold">}</text>
+  
+  <text x="55" y="75" font-size="12" font-family="'Courier New', monospace" fill="#171321" font-weight="bold">&lt;</text>
+  <text x="65" y="75" font-size="12" font-family="'Courier New', monospace" fill="#171321" font-weight="bold">&gt;</text>
+  
+  <text x="55" y="95" font-size="12" font-family="'Courier New', monospace" fill="#171321" font-weight="bold">[</text>
+  <text x="65" y="95" font-size="12" font-family="'Courier New', monospace" fill="#171321" font-weight="bold">]</text>
+  
+  <text x="55" y="115" font-size="12" font-family="'Courier New', monospace" fill="#171321" font-weight="bold">(</text>
+  <text x="65" y="115" font-size="12" font-family="'Courier New', monospace" fill="#171321" font-weight="bold">)</text>
+  
+  <text x="55" y="135" font-size="12" font-family="'Courier New', monospace" fill="#171321" font-weight="bold">/</text>
+  <text x="65" y="135" font-size="12" font-family="'Courier New', monospace" fill="#171321" font-weight="bold">\</text>
+  
+  <text x="55" y="155" font-size="12" font-family="'Courier New', monospace" fill="#171321" font-weight="bold">#</text>
+  <text x="65" y="155" font-size="12" font-family="'Courier New', monospace" fill="#171321" font-weight="bold">!</text>
+  
+  <!-- Jaw opening at the top of wrench head -->
+  <path d="M70 40 Q80 30 90 40" stroke="#bd91ff" stroke-width="3" fill="none" stroke-linecap="round"/>
 </svg>

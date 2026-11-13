@@ -22,6 +22,8 @@ type NavLink = {
 const NAV_LINKS: NavLink[] = [
   { label: 'Arcade Hub', href: '/' },
   { label: 'Explore Directory', href: '/explore' },
+  { label: 'Sprite Maker', href: '/art' },
+  { label: 'Game Maker', href: '/rules' },
   { label: 'My Projects', href: '/projects' },
 ];
 
@@ -65,6 +67,8 @@ export function Navbar() {
     
     // Handle dynamic routes
     if (href.startsWith('/play/') && pathname.startsWith('/play/')) return true;
+    if (href.startsWith('/art') && pathname.startsWith('/art')) return true;
+    if (href.startsWith('/rules') && pathname.startsWith('/rules')) return true;
     if (href.startsWith('/studio/') && pathname.startsWith('/studio/')) return true;
     
     return false;
@@ -80,7 +84,7 @@ export function Navbar() {
       return (
         <>
           <Link
-            href="/studio/art"
+            href="/art"
             className="btn btn-primary btn-create"
           >
             <span className="btn-icon">+</span>
@@ -124,7 +128,7 @@ export function Navbar() {
   };
 
   // Guest Sandbox Mode indicator
-  const isInStudio = pathname.startsWith('/studio');
+  const isInStudio = pathname.startsWith('/studio') || pathname.startsWith('/art') || pathname.startsWith('/rules');
   const showGuestCTA = isLoaded && !isSignedIn && isInStudio;
 
   return (
