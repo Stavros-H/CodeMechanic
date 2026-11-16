@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { useGameStore } from '@/store/useGameStore';
 import { useGuardedNavigation } from '@/hooks/useUnsavedChangesGuard';
+import { GameCanvas } from '@/components/GameCanvas';
+import { GameConfig } from '@/types';
 
 // ============================================================================
 // View 3: Interactive Playtest Arena
@@ -41,7 +43,7 @@ export default function PlaytestArena() {
 
   // Handle edit in studio
   const handleEditInStudio = () => {
-    navigateTo(`/studio/art?edit=${projectId}`);
+    navigateTo(`/art?edit=${projectId}`);
   };
 
   // Handle back to hub
@@ -103,13 +105,16 @@ export default function PlaytestArena() {
           </div>
         </div>
 
-        {/* Game Canvas Placeholder */}
+        {/* Game Canvas */}
         <div className="game-canvas-container">
-          <div className="game-canvas-placeholder">
-            <span className="placeholder-icon">🎮</span>
-            <span>Phaser 3 Canvas</span>
-            <span className="placeholder-hint">Project ID: {projectId}</span>
-          </div>
+          <GameCanvas
+            sceneType="playtest"
+            sceneData={{ projectId }}
+            onError={(error) => {
+              console.error('Game error:', error);
+              setGameStatus('paused');
+            }}
+          />
         </div>
 
         {/* Game Over Overlay */}
