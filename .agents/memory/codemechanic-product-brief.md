@@ -66,6 +66,15 @@ Login, signup, and account settings are separate from the five domain views.
 
 **How to apply:** Continue with Clerk and Replit PostgreSQL for auth/profile/project work. Preserve the product's ownership, payload, and storage limits while adapting provider-specific mechanics.
 
+## Visual identity
+
+- The logo should place the wrench hilt between the separate “Code” and “Mechanic” text, using visible script/code marks in the hilt. The logo can be sharp and polished without trying to feel friendly or approachable.
+- The user may later want the website itself to feel more pixelated or less smooth; do not change the current website styling unless asked.
+
+**Why:** The user clarified the logo construction and distinguished the logo’s character from possible later changes to the website’s visual style.
+
+**How to apply:** Keep the logo arrangement and code-built hilt consistent across its app uses. Treat any pixel-art or reduced-smoothness redesign as a later, explicit website request.
+
 ## Official seed blueprints
 
 The roadmap calls for eight mechanic-driven seeds: Cyberpunk Platformer; Neon Vector Space Shooter; Roguelike Dungeon Crawler; 8-Bit Street Fighter Sandbox (local 2-player); Core Defense Citadel; Incremental Energy Lab; Stealth Extraction Room; and Boss Rush Arena. Preserve their distinguishing mechanics and win conditions from the source specification when implementing seed data.
