@@ -637,7 +637,7 @@
   min-height: calc(100vh - 76px);
 }
 
-/* Sprite Backpack */
+/* Sprite Library */
 .sprite-library {
   background: var(--surface);
   border-right: 1px solid var(--line);
