@@ -32,37 +32,14 @@
 .navbar-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
   text-decoration: none;
-  color: var(--ink);
-  font: 700 18px "Space Grotesk", sans-serif;
-  letter-spacing: -0.04em;
+  flex: 0 0 auto;
 }
 
-.logo-icon {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 4px;
-  transform: rotate(-9deg);
-}
-
-.logo-square {
-  width: 14px;
-  height: 14px;
-  background: var(--accent);
-  border-radius: 3px;
-}
-
-.logo-square-2,
-.logo-square-3 {
-  background: #94d953;
-}
-
-.logo-text {
-  font-size: 1.5rem;
-  font-weight: 700;
+.logo-image {
+  display: block;
+  width: 204px;
+  height: auto;
 }
 
 /* Navigation Links */
@@ -370,6 +347,10 @@
 @media (max-width: 768px) {
   .navbar-container {
     padding: 0 1rem;
+  }
+
+  .logo-image {
+    width: 174px;
   }
 
   .navbar-links {

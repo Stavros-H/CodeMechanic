@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth, useClerk, useUser } from '@clerk/nextjs';
 
@@ -138,13 +139,7 @@ export function Navbar() {
         <div className="navbar-container">
           {/* Logo */}
           <Link href="/" className="navbar-brand">
-            <span className="logo-icon">
-              <span className="logo-square logo-square-1" />
-              <span className="logo-square logo-square-2" />
-              <span className="logo-square logo-square-3" />
-              <span className="logo-square logo-square-4" />
-            </span>
-            <span className="logo-text">CodeMechanic</span>
+            <Image className="logo-image" src="/logo.svg" alt="CodeMechanic" width={204} height={50} priority />
           </Link>
 
           {/* Navigation Links */}
