@@ -68,7 +68,7 @@ Login, signup, and account settings are separate from the five domain views.
 
 ## Visual identity
 
-- The logo should place the wrench hilt between the separate “Code” and “Mechanic” text, using visible script/code marks in the hilt. The logo can be sharp and polished without trying to feel friendly or approachable.
+- The logo stacks “Code” over “Mechanic” on the left, with a recognizable open-end wrench head on the right and its handle extending left through the gap between the words. Script-like handle details are optional; prioritize a clear wrench silhouette. The logo can be sharp and polished without trying to feel friendly or approachable.
 - The user may later want the website itself to feel more pixelated or less smooth; do not change the current website styling unless asked.
 
 **Why:** The user clarified the logo construction and distinguished the logo’s character from possible later changes to the website’s visual style.

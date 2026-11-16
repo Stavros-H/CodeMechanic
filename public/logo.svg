@@ -1,19 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 64" role="img" aria-labelledby="title desc">
   <title id="title">CodeMechanic</title>
-  <desc id="desc">A precision wrench formed from code brackets, beside the CodeMechanic wordmark.</desc>
+  <desc id="desc">The stacked CodeMechanic wordmark joined to an open-end wrench.</desc>
 
-  <g fill="none" stroke-linecap="square" stroke-linejoin="miter">
-    <!-- Paired curly braces make the wrench head, notches open toward the handle. -->
-    <path d="M25 5.5c-4.4 0-6.2 2.3-6.2 6.4v2.3c0 3-1.3 4.9-4.4 5.9 3.1 1 4.4 2.9 4.4 5.9v2.3c0 4.1 1.8 6.4 6.2 6.4"
-      stroke="#d8c0ff" stroke-width="3.5"/>
-    <path d="M32 5.5c4.4 0 6.2 2.3 6.2 6.4v2.3c0 3 1.3 4.9 4.4 5.9-3.1 1-4.4 2.9-4.4 5.9v2.3c0 4.1-1.8 6.4-6.2 6.4"
-      stroke="#bd91ff" stroke-width="3.5"/>
-    <!-- The slash hands off to a literal code token in the wordmark gap. -->
-    <path d="m34 28 5.5 7" stroke="#bd91ff" stroke-width="3"/>
-  </g>
-  <circle cx="29" cy="20" r="1.8" fill="#9fe2c1"/>
-  <text x="39" y="39" fill="#d8c0ff" font-family="monospace" font-size="11" font-weight="700" letter-spacing="-1.1">&lt;/&gt;</text>
+  <!-- The straight handle runs through the wordmark gap and joins the head at its back. -->
+  <path d="M87 32h151" fill="none" stroke="#bd91ff" stroke-width="5" stroke-linecap="square"/>
 
-  <text x="66" y="23" fill="#f3effa" font-family="DM Sans, sans-serif" font-size="22" font-weight="700" letter-spacing="-0.7">Code<tspan fill="#bd91ff">.</tspan></text>
-  <text x="66" y="57" fill="#c9c0d8" font-family="DM Sans, sans-serif" font-size="17" font-weight="600" letter-spacing="0.25">Mechanic</text>
+  <!-- A single clear open-end head: two jaws frame the open mouth on the right. -->
+  <path d="M224 18h11V8c11-4 25 1 25 13l-17 4v6l17 4c-4 12-15 18-25 12V36h-11Z"
+    fill="#bd91ff" stroke="#d8c0ff" stroke-width="1.2" stroke-linejoin="round"/>
+
+  <text x="5" y="23" fill="#f3effa" font-family="DM Sans, sans-serif" font-size="22" font-weight="700" letter-spacing="-0.7">Code<tspan fill="#bd91ff">.</tspan></text>
+  <text x="5" y="57" fill="#c9c0d8" font-family="DM Sans, sans-serif" font-size="17" font-weight="600" letter-spacing="0.25">Mechanic</text>
 </svg>
