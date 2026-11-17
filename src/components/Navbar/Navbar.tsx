@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, useClerk, useUser } from '@clerk/nextjs';
+import { useGameStore } from '@/store/useGameStore';
+import { CreateProject } from '@/schemas/projectSchemas';
 
 // ============================================================================
 // Types
@@ -34,9 +36,11 @@ const NAV_LINKS: NavLink[] = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
   const { signOut } = useClerk();
+  const { createNewProject, setActiveTab } = useGameStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const profileImage = user?.imageUrl ?? null;
@@ -57,6 +61,53 @@ export function Navbar() {
   }, []);
 
   const handleLogout = () => signOut({ redirectUrl: '/' });
+
+  // Handle create new project
+  const handleCreateNewProject = () => {
+    const defaultProject: CreateProject = {
+      title: 'Untitled Project',
+      description: '',
+      genre: 'Platformer',
+      author_id: user?.id || null,
+      is_published: false,
+      is_template: false,
+      project_data: {
+        sprites: [
+          {
+            id: 'player_1_default',
+            name: 'Player 1',
+            role: 'player_1',
+            resolution: 32,
+            frames: {},
+            hitbox: {
+              shape: 'rectangle',
+              width: 24,
+              height: 32,
+              offsetX: 0,
+              offsetY: 0,
+            },
+          },
+        ],
+        level_data: {
+          width: 10,
+          height: 10,
+          tile_size: 32,
+          tiles: [],
+        },
+        mechanics_config: {
+          player_1: { speed: 200, jump_force: 300, gravity: 800 },
+          player_2: { speed: 200, jump_force: 300, gravity: 800 },
+          win_condition: 'reach_goal',
+        },
+        economy_config: {},
+        audio_config: {},
+        version: '1.0.0',
+      },
+    };
+    createNewProject(defaultProject);
+    setActiveTab('art');
+    router.push('/art');
+  };
 
   // Check if link is active
   const isActive = (href: string) => {
@@ -84,13 +135,13 @@ export function Navbar() {
     if (isSignedIn) {
       return (
         <>
-          <Link
-            href="/art"
+          <button
             className="btn btn-primary btn-create"
+            onClick={handleCreateNewProject}
           >
             <span className="btn-icon">+</span>
             <span>Create New Project</span>
-          </Link>
+          </button>
           <div className="user-menu">
             <button
               className="user-avatar"
