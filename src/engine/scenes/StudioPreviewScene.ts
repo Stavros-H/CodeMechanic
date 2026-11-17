@@ -7,7 +7,7 @@
  * - Provides a quick feedback loop for creators
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { PhaserGameManager } from '../PhaserGameManager';
 import { GameConfig } from '@/types';
 

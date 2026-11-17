@@ -14,8 +14,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '@/store/useGameStore';
-import { PhaserGameManager, gameManager } from '@/engine';
-import { GameConfig, GameSceneType } from '@/types';
+import type { PhaserGameManager, GameSceneType } from '@/engine';
+import type { GameConfig } from '@/types';
 
 // ============================================================================
 // Types
@@ -46,6 +46,7 @@ export function GameCanvas({
   onError,
 }: GameCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const managerRef = useRef<PhaserGameManager | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   
@@ -53,34 +54,46 @@ export function GameCanvas({
 
   // Initialize Phaser on mount
   useEffect(() => {
-    if (!canvasRef.current) return;
+    let cancelled = false;
 
-    try {
-      // Initialize game manager
-      const manager = gameManager;
-      
-      // Initialize Phaser game
-      manager.initialize(canvasRef.current, {}, sceneType);
-      
-      // Start the scene with config
-      if (config) {
-        manager.startScene(sceneType, { gameConfig: config, ...sceneData });
-      } else {
-        manager.startScene(sceneType, sceneData);
-      }
+    // Phaser touches browser APIs during module initialization, so load it only
+    // after this client component has mounted.
+    void import('@/engine')
+      .then(({ gameManager: manager }) => {
+        if (cancelled || !canvasRef.current) return;
 
-      setIsInitialized(true);
-      onReady?.(manager);
-    } catch (err) {
-      const errorObj = err instanceof Error ? err : new Error(String(err));
-      setError(errorObj);
-      onError?.(errorObj);
-    }
+        try {
+          managerRef.current = manager;
+          manager.initialize(canvasRef.current, {}, sceneType);
+
+          if (config) {
+            manager.startScene(sceneType, { gameConfig: config, ...sceneData });
+          } else {
+            manager.startScene(sceneType, sceneData);
+          }
+
+          setIsInitialized(true);
+          onReady?.(manager);
+        } catch (err) {
+          const errorObj = err instanceof Error ? err : new Error(String(err));
+          setError(errorObj);
+          onError?.(errorObj);
+        }
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        const errorObj = err instanceof Error ? err : new Error(String(err));
+        setError(errorObj);
+        onError?.(errorObj);
+      });
 
     // Cleanup on unmount
     return () => {
+      cancelled = true;
+      const manager = managerRef.current;
+      managerRef.current = null;
       try {
-        gameManager.destroy();
+        manager?.destroy();
       } catch (err) {
         console.error('Error destroying game:', err);
       }
@@ -92,7 +105,8 @@ export function GameCanvas({
     if (!isInitialized || !currentProject) return;
 
     // Restart scene with new project data
-    const manager = gameManager;
+    const manager = managerRef.current;
+    if (!manager) return;
     const game = manager.getGame();
     
     if (game && !isDirty) {

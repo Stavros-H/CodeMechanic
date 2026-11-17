@@ -8,7 +8,7 @@
  * - Transitioning to playtest or studio-preview scenes
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { PhaserGameManager } from '../PhaserGameManager';
 import { GameConfig } from '@/types';
 

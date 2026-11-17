@@ -9,7 +9,7 @@
  * - Provides debug overlays
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { PhaserGameManager } from '../PhaserGameManager';
 import { GameConfig, EntityConfig, EntityRole, WinConditionType } from '@/types';
 

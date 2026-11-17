@@ -11,7 +11,7 @@
  * - UI code must NOT directly mutate Phaser internals
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { GameConfig, EntityConfig, HitboxConfig, AudioConfig } from '@/types';
 
 // ============================================================================
