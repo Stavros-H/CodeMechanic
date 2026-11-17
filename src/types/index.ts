@@ -2,6 +2,54 @@
 export * from '@/schemas/projectSchemas';
 
 // Additional types for the application
+import type {
+  EntityRole as SchemaEntityRole,
+  Hitbox as SchemaHitbox,
+  ProjectData,
+} from '@/schemas/projectSchemas';
+
+/**
+ * Transitional Phaser adapter shape. Persisted projects remain validated by
+ * ProjectDataSchema; these optional fields support the engine's current scene
+ * adapter while it consumes the persisted data model.
+ */
+export type GameConfig = ProjectData & {
+  levelWidth?: number;
+  levelHeight?: number;
+  gravity?: number;
+  debug?: boolean;
+  debugBodyColor?: number;
+  debugStaticBodyColor?: number;
+  debugVelocityColor?: number;
+  tiles?: EntityConfig[];
+  entities?: EntityConfig[];
+  enemies?: EntityConfig[];
+  winCondition?: string;
+};
+
+export type EntityConfig = {
+  role: SchemaEntityRole;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  texture?: string;
+  health?: number;
+  solid?: boolean;
+  hitbox?: HitboxConfig;
+};
+
+export type HitboxConfig = Partial<SchemaHitbox> & {
+  shape: 'rectangle' | 'circle';
+  width?: number;
+  height?: number;
+  radius?: number;
+  offsetX?: number;
+  offsetY?: number;
+  allowGravity?: boolean;
+  immovable?: boolean;
+  collideWorldBounds?: boolean;
+};
 
 export type ViewRoute = 
   | '/' 

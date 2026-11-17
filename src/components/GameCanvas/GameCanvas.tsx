@@ -27,7 +27,7 @@ interface GameCanvasProps {
   /** Scene type to start */
   sceneType?: GameSceneType;
   /** Additional data to pass to the scene */
-  sceneData?: any;
+  sceneData?: Record<string, unknown>;
   /** Called when game is ready */
   onReady?: (gameManager: PhaserGameManager) => void;
   /** Called when game errors */

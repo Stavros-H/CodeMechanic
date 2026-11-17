@@ -11,7 +11,8 @@
 
 import * as Phaser from 'phaser';
 import { PhaserGameManager } from '../PhaserGameManager';
-import { GameConfig, EntityConfig, EntityRole, WinConditionType } from '@/types';
+import type { PhaserSceneData } from '../PhaserGameManager';
+import type { GameConfig, EntityConfig, EntityRoleType as EntityRole } from '@/types';
 
 export class PlaytestScene extends Phaser.Scene {
   private gameManager: PhaserGameManager;
@@ -26,7 +27,7 @@ export class PlaytestScene extends Phaser.Scene {
   private tiles: Phaser.GameObjects.Sprite[] = [];
   
   // Physics
-  private physics!: Phaser.Physics.Arcade.ArcadePhysics;
+  private arcadePhysics!: Phaser.Physics.Arcade.ArcadePhysics;
   
   // Debug
   private debugText?: Phaser.GameObjects.Text;
@@ -58,11 +59,15 @@ export class PlaytestScene extends Phaser.Scene {
     // In production, assets would be loaded from the game config
   }
 
-  create(data: any): void {
-    this.gameConfig = data?.gameConfig;
-    
+  create(data: PhaserSceneData): void {
+    this.gameConfig = data.gameConfig;
+
+    this.gameManager.createFallbackTexture(this);
+
     // Get physics instance
-    this.physics = this.game.physics as Phaser.Physics.Arcade.ArcadePhysics;
+    this.arcadePhysics = (this as unknown as {
+      physics: Phaser.Physics.Arcade.ArcadePhysics;
+    }).physics;
     
     // Setup camera
     this.setupCamera();
@@ -216,46 +221,61 @@ export class PlaytestScene extends Phaser.Scene {
    */
   private setupCollisions(): void {
     // Player vs. Tiles
-    this.physics.add.collider(
+    this.arcadePhysics.add.collider(
       Array.from(this.players.values()),
       this.tiles.filter(t => t.getData('solid')),
-      this.handlePlayerTileCollision,
+      (player, tile) => this.handlePlayerTileCollision(
+        player as Phaser.GameObjects.Sprite,
+        tile as Phaser.GameObjects.Sprite
+      ),
       undefined,
       this
     );
 
     // Player vs. Enemies (damage)
-    this.physics.add.overlap(
+    this.arcadePhysics.add.overlap(
       Array.from(this.players.values()),
       this.enemies,
-      this.handlePlayerEnemyCollision,
+      (player, enemy) => this.handlePlayerEnemyCollision(
+        player as Phaser.GameObjects.Sprite,
+        enemy as Phaser.GameObjects.Sprite
+      ),
       undefined,
       this
     );
 
     // Player vs. Hazards (damage)
-    this.physics.add.overlap(
+    this.arcadePhysics.add.overlap(
       Array.from(this.players.values()),
       this.hazards,
-      this.handlePlayerHazardCollision,
+      (player, hazard) => this.handlePlayerHazardCollision(
+        player as Phaser.GameObjects.Sprite,
+        hazard as Phaser.GameObjects.Sprite
+      ),
       undefined,
       this
     );
 
     // Player vs. Pickups
-    this.physics.add.overlap(
+    this.arcadePhysics.add.overlap(
       Array.from(this.players.values()),
       this.pickups,
-      this.handlePlayerPickupCollision,
+      (player, pickup) => this.handlePlayerPickupCollision(
+        player as Phaser.GameObjects.Sprite,
+        pickup as Phaser.GameObjects.Sprite
+      ),
       undefined,
       this
     );
 
     // Player vs. Goals
-    this.physics.add.overlap(
+    this.arcadePhysics.add.overlap(
       Array.from(this.players.values()),
       this.goals,
-      this.handlePlayerGoalCollision,
+      (player, goal) => this.handlePlayerGoalCollision(
+        player as Phaser.GameObjects.Sprite,
+        goal as Phaser.GameObjects.Sprite
+      ),
       undefined,
       this
     );
@@ -284,8 +304,8 @@ export class PlaytestScene extends Phaser.Scene {
     
     // Play sound
     this.gameManager.playAudio({
-      waveform: 'sawtooth',
-      frequency: 200,
+      wave: 'sawtooth',
+      freq_start: 200,
       decay: 0.1,
       duration: 0.1,
     });
@@ -309,8 +329,8 @@ export class PlaytestScene extends Phaser.Scene {
 
     // Play sound
     this.gameManager.playAudio({
-      waveform: 'sawtooth',
-      frequency: 150,
+      wave: 'sawtooth',
+      freq_start: 150,
       decay: 0.1,
       duration: 0.15,
     });
@@ -334,8 +354,8 @@ export class PlaytestScene extends Phaser.Scene {
 
     // Play sound
     this.gameManager.playAudio({
-      waveform: 'sine',
-      frequency: 800,
+      wave: 'sine',
+      freq_start: 800,
       decay: 0.1,
       duration: 0.1,
     });
@@ -355,8 +375,8 @@ export class PlaytestScene extends Phaser.Scene {
 
     // Play sound
     this.gameManager.playAudio({
-      waveform: 'sine',
-      frequency: 600,
+      wave: 'sine',
+      freq_start: 600,
       decay: 0.2,
       duration: 0.3,
     });
@@ -380,7 +400,7 @@ export class PlaytestScene extends Phaser.Scene {
     if (this.gameConfig?.winCondition === 'reach_goal') {
       // Already handled in collision
     } else if (this.gameConfig?.winCondition === 'defeat_all_enemies') {
-      if (this.enemies.length === 0 && this.gameConfig.enemies?.length > 0) {
+      if (this.enemies.length === 0 && (this.gameConfig.enemies?.length ?? 0) > 0) {
         this.handleGameOver(true);
       }
     }
@@ -403,7 +423,7 @@ export class PlaytestScene extends Phaser.Scene {
     this.isPaused = true;
 
     // Pause physics
-    this.physics.pause();
+    this.arcadePhysics.pause();
 
     // Show game over overlay
     const overlay = this.add.rectangle(
@@ -421,7 +441,7 @@ export class PlaytestScene extends Phaser.Scene {
       won ? 'VICTORY!' : 'DEFEAT',
       {
         font: '48px Arial',
-        fill: won ? '#00ff00' : '#ff0000',
+        color: won ? '#00ff00' : '#ff0000',
         align: 'center',
       }
     ).setOrigin(0.5);
@@ -432,7 +452,7 @@ export class PlaytestScene extends Phaser.Scene {
       'Replay',
       {
         font: '24px Arial',
-        fill: '#ffffff',
+        color: '#ffffff',
         align: 'center',
       }
     ).setOrigin(0.5);
@@ -450,19 +470,19 @@ export class PlaytestScene extends Phaser.Scene {
     // FPS counter
     this.fpsText = this.add.text(10, 10, '', {
       font: '12px Arial',
-      fill: '#00ff00',
+      color: '#00ff00',
     });
 
     // Entity count
     this.entityCountText = this.add.text(10, 25, '', {
       font: '12px Arial',
-      fill: '#00ff00',
+      color: '#00ff00',
     });
 
     // Debug info
     this.debugText = this.add.text(10, 40, '', {
       font: '12px Arial',
-      fill: '#00ff00',
+      color: '#00ff00',
     });
   }
 
@@ -525,17 +545,17 @@ export class PlaytestScene extends Phaser.Scene {
     }
 
     // Handle actions
-    if (Phaser.Input.Keyboard.JustDown(this.keyF)) {
+    if (this.keyF && Phaser.Input.Keyboard.JustDown(this.keyF)) {
       // Action 1
       this.handlePlayerAction(player1, 'action1');
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keyG)) {
+    if (this.keyG && Phaser.Input.Keyboard.JustDown(this.keyG)) {
       // Action 2
       this.handlePlayerAction(player1, 'action2');
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keySpace)) {
+    if (this.keySpace && Phaser.Input.Keyboard.JustDown(this.keySpace)) {
       // Jump
       if (body.onFloor()) {
         body.setVelocityY(-300);
@@ -549,8 +569,8 @@ export class PlaytestScene extends Phaser.Scene {
   private handlePlayerAction(player: Phaser.GameObjects.Sprite, action: string): void {
     // Play action sound
     this.gameManager.playAudio({
-      waveform: 'sine',
-      frequency: 400,
+      wave: 'sine',
+      freq_start: 400,
       decay: 0.05,
       duration: 0.05,
     });

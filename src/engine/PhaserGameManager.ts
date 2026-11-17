@@ -12,13 +12,21 @@
  */
 
 import * as Phaser from 'phaser';
-import { GameConfig, EntityConfig, HitboxConfig, AudioConfig } from '@/types';
+import type { GameConfig, HitboxConfig } from '@/types';
+import { BootScene } from './scenes/BootScene';
+import { PlaytestScene } from './scenes/PlaytestScene';
+import { StudioPreviewScene } from './scenes/StudioPreviewScene';
 
 // ============================================================================
 // Types
 // ============================================================================
 
 export type GameSceneType = 'boot' | 'playtest' | 'studio-preview';
+export type PhaserSceneData = {
+  gameConfig?: GameConfig;
+  targetScene?: GameSceneType;
+  [key: string]: unknown;
+};
 
 export interface PhaserGameInstance {
   game: Phaser.Game;
@@ -40,7 +48,7 @@ const DEFAULT_GAME_CONFIG: Phaser.Types.Core.GameConfig = {
   physics: {
     default: 'arcade',
     arcade: {
-      gravity: { y: 0 },
+      gravity: { x: 0, y: 0 },
       debug: false,
     },
   },
@@ -73,7 +81,11 @@ export class PhaserGameManager {
   private constructor() {
     // Initialize AudioContext for procedural audio
     try {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextConstructor = window.AudioContext
+        ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (AudioContextConstructor) {
+        this.audioContext = new AudioContextConstructor();
+      }
     } catch (e) {
       console.warn('Web Audio API not available:', e);
     }
@@ -111,24 +123,19 @@ export class PhaserGameManager {
     // Create game instance
     this.gameInstance = new Phaser.Game(gameConfig);
 
-    // Create fallback texture
-    this.createFallbackTexture();
-
     return this.gameInstance;
   }
 
   /**
-   * Create the fallback checkerboard texture for missing sprites
+   * Create the fallback checkerboard texture once a Phaser scene is ready.
    */
-  private createFallbackTexture(): void {
-    if (!this.gameInstance) return;
-
-    const textureManager = this.gameInstance.textures;
+  public createFallbackTexture(scene: Phaser.Scene): void {
+    if (scene.textures.exists(FALLBACK_TEXTURE_KEY)) return;
     const width = 16;
     const height = 16;
 
     // Create a magenta/black checkerboard
-    const graphics = this.gameInstance.make.graphics({ x: 0, y: 0 });
+    const graphics = scene.make.graphics({ x: 0, y: 0 });
     
     // Fill with magenta
     graphics.fillStyle(0xff00ff);
@@ -184,7 +191,7 @@ export class PhaserGameManager {
   /**
    * Start a new scene of the specified type
    */
-  public startScene(sceneType: GameSceneType, data?: any): void {
+  public startScene(sceneType: GameSceneType, data?: PhaserSceneData): void {
     if (!this.gameInstance) {
       console.error('Phaser game not initialized');
       return;
@@ -194,7 +201,7 @@ export class PhaserGameManager {
 
     // Destroy existing scene if it exists
     if (this.currentScene) {
-      this.currentScene.destroy();
+      this.currentScene.scene.stop();
       this.currentScene = null;
     }
 
@@ -217,10 +224,10 @@ export class PhaserGameManager {
   /**
    * Start the boot scene
    */
-  private startBootScene(data?: any): void {
+  private startBootScene(data?: PhaserSceneData): void {
     if (!this.gameInstance) return;
 
-    const bootScene = new (this.getSceneClass('boot'))();
+    const bootScene = new BootScene();
     this.gameInstance.scene.add('boot', bootScene, true, data);
     this.currentScene = bootScene;
     this.scenes.set('boot', bootScene);
@@ -229,10 +236,10 @@ export class PhaserGameManager {
   /**
    * Start the playtest scene
    */
-  private startPlaytestScene(data?: any): void {
+  private startPlaytestScene(data?: PhaserSceneData): void {
     if (!this.gameInstance) return;
 
-    const playtestScene = new (this.getSceneClass('playtest'))();
+    const playtestScene = new PlaytestScene();
     this.gameInstance.scene.add('playtest', playtestScene, true, data);
     this.currentScene = playtestScene;
     this.scenes.set('playtest', playtestScene);
@@ -241,30 +248,13 @@ export class PhaserGameManager {
   /**
    * Start the studio preview scene
    */
-  private startStudioPreviewScene(data?: any): void {
+  private startStudioPreviewScene(data?: PhaserSceneData): void {
     if (!this.gameInstance) return;
 
-    const studioScene = new (this.getSceneClass('studio-preview'))();
+    const studioScene = new StudioPreviewScene();
     this.gameInstance.scene.add('studio-preview', studioScene, true, data);
     this.currentScene = studioScene;
     this.scenes.set('studio-preview', studioScene);
-  }
-
-  /**
-   * Get the scene class for a given type (lazy-loaded)
-   */
-  private getSceneClass(sceneType: GameSceneType): any {
-    // Dynamic import based on scene type
-    switch (sceneType) {
-      case 'boot':
-        return require('./scenes/BootScene').BootScene;
-      case 'playtest':
-        return require('./scenes/PlaytestScene').PlaytestScene;
-      case 'studio-preview':
-        return require('./scenes/StudioPreviewScene').StudioPreviewScene;
-      default:
-        return require('./scenes/BootScene').BootScene;
-    }
   }
 
   /**
@@ -272,12 +262,7 @@ export class PhaserGameManager {
    * Called when leaving playtest route to prevent state leaks
    */
   public destroy(): void {
-    // Destroy all scenes
-    this.scenes.forEach((scene) => {
-      if (scene.active) {
-        scene.destroy();
-      }
-    });
+    // Phaser owns scene teardown when its game instance is destroyed.
     this.scenes.clear();
 
     // Destroy game instance
@@ -300,7 +285,14 @@ export class PhaserGameManager {
   /**
    * Play procedural audio
    */
-  public playAudio(config: AudioConfig): void {
+  public playAudio(config: {
+    wave?: 'sine' | 'square' | 'sawtooth' | 'triangle' | 'noise';
+    freq_start?: number;
+    freq_end?: number;
+    decay?: number;
+    duration?: number;
+    volume?: number;
+  }): void {
     if (!this.audioContext) {
       console.warn('AudioContext not available');
       return;
@@ -309,8 +301,14 @@ export class PhaserGameManager {
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
 
-    oscillator.type = config.waveform || 'sine';
-    oscillator.frequency.setValueAtTime(config.frequency || 440, this.audioContext.currentTime);
+    oscillator.type = config.wave && config.wave !== 'noise' ? config.wave : 'sine';
+    oscillator.frequency.setValueAtTime(config.freq_start || 440, this.audioContext.currentTime);
+    if (config.freq_end) {
+      oscillator.frequency.linearRampToValueAtTime(
+        config.freq_end,
+        this.audioContext.currentTime + (config.duration || 0.2)
+      );
+    }
 
     gainNode.gain.setValueAtTime(config.volume || 0.1, this.audioContext.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(
@@ -354,13 +352,15 @@ export class PhaserGameManager {
     entity: Phaser.GameObjects.Sprite,
     config: HitboxConfig
   ): Phaser.Physics.Arcade.Body {
-    if (!this.gameInstance || !this.gameInstance.physics) {
+    const physics = (scene as unknown as {
+      physics: Phaser.Physics.Arcade.ArcadePhysics;
+    }).physics;
+    if (!physics) {
       throw new Error('Phaser physics not initialized');
     }
 
-    const physics = this.gameInstance.physics as Phaser.Physics.Arcade.ArcadePhysics;
-
     // Enable physics for the entity
+    physics.add.existing(entity);
     const body = entity.body as Phaser.Physics.Arcade.Body;
 
     // Configure hitbox based on type
@@ -382,7 +382,7 @@ export class PhaserGameManager {
   /**
    * Convert game config to Phaser physics config
    */
-  public createPhysicsConfig(config: GameConfig): Phaser.Types.Physics.Arcade.ArcadePhysicsConfig {
+  public createPhysicsConfig(config: GameConfig): Phaser.Types.Physics.Arcade.ArcadeWorldConfig {
     return {
       gravity: { x: 0, y: config.gravity || 0 },
       debug: config.debug || false,

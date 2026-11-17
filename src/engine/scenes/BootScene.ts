@@ -10,7 +10,8 @@
 
 import * as Phaser from 'phaser';
 import { PhaserGameManager } from '../PhaserGameManager';
-import { GameConfig } from '@/types';
+import type { PhaserSceneData } from '../PhaserGameManager';
+import type { GameConfig } from '@/types';
 
 export class BootScene extends Phaser.Scene {
   private gameManager: PhaserGameManager;
@@ -26,8 +27,8 @@ export class BootScene extends Phaser.Scene {
     // The fallback texture is created programmatically in PhaserGameManager
   }
 
-  create(data: any): void {
-    this.gameConfig = data?.gameConfig;
+  create(data: PhaserSceneData): void {
+    this.gameConfig = data.gameConfig;
 
     // Validate game configuration
     if (!this.validateConfig(this.gameConfig)) {
@@ -37,7 +38,7 @@ export class BootScene extends Phaser.Scene {
     }
 
     // Configuration is valid, transition to the appropriate scene
-    const targetScene = data?.targetScene || 'playtest';
+    const targetScene = data.targetScene || 'playtest';
     
     switch (targetScene) {
       case 'playtest':
@@ -62,11 +63,11 @@ export class BootScene extends Phaser.Scene {
     }
 
     // Check required fields
-    if (!config.entities) {
+    if (!config.entities?.length && !config.sprites?.length) {
       console.warn('No entities in configuration');
     }
 
-    if (!config.mechanics) {
+    if (!config.mechanics_config) {
       console.warn('No mechanics in configuration');
     }
 
@@ -76,7 +77,7 @@ export class BootScene extends Phaser.Scene {
   /**
    * Start the playtest scene
    */
-  private startPlaytest(data: any): void {
+  private startPlaytest(data: PhaserSceneData): void {
     this.scene.start('playtest', {
       gameConfig: this.gameConfig,
       ...data,
@@ -86,7 +87,7 @@ export class BootScene extends Phaser.Scene {
   /**
    * Start the studio preview scene
    */
-  private startStudioPreview(data: any): void {
+  private startStudioPreview(data: PhaserSceneData): void {
     this.scene.start('studio-preview', {
       gameConfig: this.gameConfig,
       ...data,
@@ -104,7 +105,7 @@ export class BootScene extends Phaser.Scene {
       `Boot Error: ${message}`,
       {
         font: '16px Arial',
-        fill: '#ff0000',
+        color: '#ff0000',
         align: 'center',
       }
     ).setOrigin(0.5);
@@ -116,7 +117,7 @@ export class BootScene extends Phaser.Scene {
       'Retry',
       {
         font: '16px Arial',
-        fill: '#00ff00',
+        color: '#00ff00',
         align: 'center',
       }
     ).setOrigin(0.5);

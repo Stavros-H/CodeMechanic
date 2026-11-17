@@ -9,7 +9,8 @@
 
 import * as Phaser from 'phaser';
 import { PhaserGameManager } from '../PhaserGameManager';
-import { GameConfig } from '@/types';
+import type { PhaserSceneData } from '../PhaserGameManager';
+import type { GameConfig } from '@/types';
 
 export class StudioPreviewScene extends Phaser.Scene {
   private gameManager: PhaserGameManager;
@@ -19,7 +20,7 @@ export class StudioPreviewScene extends Phaser.Scene {
   private previewEntities: Phaser.GameObjects.Sprite[] = [];
   
   // Physics
-  private physics!: Phaser.Physics.Arcade.ArcadePhysics;
+  private arcadePhysics!: Phaser.Physics.Arcade.ArcadePhysics;
   
   // Camera
   private camera?: Phaser.Cameras.Scene2D.Camera;
@@ -33,11 +34,15 @@ export class StudioPreviewScene extends Phaser.Scene {
     // Preload any assets if needed
   }
 
-  create(data: any): void {
-    this.gameConfig = data?.gameConfig;
-    
+  create(data: PhaserSceneData): void {
+    this.gameConfig = data.gameConfig;
+
+    this.gameManager.createFallbackTexture(this);
+
     // Get physics instance
-    this.physics = this.game.physics as Phaser.Physics.Arcade.ArcadePhysics;
+    this.arcadePhysics = (this as unknown as {
+      physics: Phaser.Physics.Arcade.ArcadePhysics;
+    }).physics;
     
     // Setup camera
     this.camera = this.cameras.main;
@@ -61,7 +66,7 @@ export class StudioPreviewScene extends Phaser.Scene {
         'No preview available',
         {
           font: '24px Arial',
-          fill: '#ffffff',
+          color: '#ffffff',
           align: 'center',
         }
       ).setOrigin(0.5);
@@ -96,7 +101,7 @@ export class StudioPreviewScene extends Phaser.Scene {
       'Studio Preview - Press ESC to exit',
       {
         font: '16px Arial',
-        fill: '#ffffff',
+        color: '#ffffff',
         align: 'center',
       }
     ).setOrigin(0.5);

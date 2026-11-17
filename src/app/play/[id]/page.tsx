@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useGameStore } from '@/store/useGameStore';
 import { useGuardedNavigation } from '@/hooks/useUnsavedChangesGuard';
 import { GameCanvas } from '@/components/GameCanvas';
-import { GameConfig } from '@/types';
 
 // ============================================================================
 // View 3: Interactive Playtest Arena
