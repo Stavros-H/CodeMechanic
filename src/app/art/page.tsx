@@ -38,6 +38,7 @@ interface PixelCanvasProps {
   pixels: Array<{ x: number; y: number; color: string }>;
   onPixelDraw: (x: number, y: number, color: string) => void;
   onPixelErase: (x: number, y: number) => void;
+  onDrawShape: (shape: { type: 'rectangle' | 'circle' | 'line'; x1: number; y1: number; x2: number; y2: number; color: string }) => void;
   primaryColor: string;
   secondaryColor: string;
   activeTool: DrawingTool;
@@ -52,6 +53,7 @@ function PixelCanvas({
   pixels,
   onPixelDraw,
   onPixelErase,
+  onDrawShape,
   primaryColor,
   secondaryColor,
   activeTool,
@@ -60,6 +62,8 @@ function PixelCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
   const lastPositionRef = useRef<{ x: number; y: number } | null>(null);
+  const shapeStartRef = useRef<{ x: number; y: number } | null>(null);
+  const shapePreviewRef = useRef<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
 
   // Draw to canvas
   const drawCanvas = useCallback(() => {
@@ -106,7 +110,47 @@ function PixelCanvas({
         scale
       );
     }
-  }, [width, height, scale, showGrid, pixels, primaryColor, secondaryColor]);
+
+    // Draw shape preview (for rectangle, circle, line)
+    const preview = shapePreviewRef.current;
+    if (preview && (activeTool === 'rectangle' || activeTool === 'circle' || activeTool === 'line')) {
+      ctx.save();
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = primaryColor;
+      ctx.strokeStyle = primaryColor;
+      ctx.lineWidth = 1;
+
+      const x1 = Math.min(preview.x1, preview.x2);
+      const y1 = Math.min(preview.y1, preview.y2);
+      const x2 = Math.max(preview.x1, preview.x2);
+      const y2 = Math.max(preview.y1, preview.y2);
+      const width = x2 - x1 + 1;
+      const height = y2 - y1 + 1;
+
+      if (activeTool === 'rectangle') {
+        ctx.fillRect(
+          x1 * scale,
+          y1 * scale,
+          width * scale,
+          height * scale
+        );
+      } else if (activeTool === 'circle') {
+        const radius = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2)) / 2;
+        const centerX = ((x1 + x2) / 2) * scale;
+        const centerY = ((y1 + y2) / 2) * scale;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius * scale, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (activeTool === 'line') {
+        ctx.beginPath();
+        ctx.moveTo(preview.x1 * scale, preview.y1 * scale);
+        ctx.lineTo(preview.x2 * scale, preview.y2 * scale);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+  }, [width, height, scale, showGrid, pixels, primaryColor, activeTool]);
 
   // Handle mouse/pointer events
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -120,6 +164,15 @@ function PixelCanvas({
     // Check bounds
     if (x < 0 || x >= width || y < 0 || y >= height) return;
 
+    // For shape tools, start drawing
+    if (activeTool === 'rectangle' || activeTool === 'circle' || activeTool === 'line') {
+      shapeStartRef.current = { x, y };
+      shapePreviewRef.current = { x1: x, y1: y, x2: x, y2: y };
+      isDrawingRef.current = true;
+      drawCanvas();
+      return;
+    }
+
     isDrawingRef.current = true;
     lastPositionRef.current = { x, y };
 
@@ -128,18 +181,36 @@ function PixelCanvas({
       onPixelDraw(x, y, primaryColor);
     } else if (activeTool === 'eraser') {
       onPixelErase(x, y);
+    } else if (activeTool === 'bucket') {
+      // Bucket fill would be handled separately
+    } else if (activeTool === 'eyedropper') {
+      // Eyedropper would sample color
     }
-  }, [scale, width, height, activeTool, primaryColor, onPixelDraw, onPixelErase]);
+  }, [scale, width, height, activeTool, primaryColor, onPixelDraw, onPixelErase, drawCanvas]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isDrawingRef.current) return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor((e.clientX - rect.left) / scale);
     const y = Math.floor((e.clientY - rect.top) / scale);
+
+    // For shape tools, update preview
+    if (activeTool === 'rectangle' || activeTool === 'circle' || activeTool === 'line') {
+      if (shapeStartRef.current) {
+        shapePreviewRef.current = {
+          x1: shapeStartRef.current.x,
+          y1: shapeStartRef.current.y,
+          x2: x,
+          y2: y,
+        };
+        drawCanvas();
+      }
+      return;
+    }
+
+    if (!isDrawingRef.current) return;
 
     // Check bounds
     if (x < 0 || x >= width || y < 0 || y >= height) return;
@@ -157,17 +228,42 @@ function PixelCanvas({
       }
       lastPositionRef.current = { x, y };
     }
-  }, [scale, width, height, activeTool, primaryColor, onPixelDraw, onPixelErase]);
+  }, [scale, width, height, activeTool, primaryColor, onPixelDraw, onPixelErase, drawCanvas]);
 
   const handlePointerUp = useCallback(() => {
+    // For shape tools, finalize the shape
+    if (activeTool === 'rectangle' || activeTool === 'circle' || activeTool === 'line') {
+      if (shapeStartRef.current && shapePreviewRef.current && onDrawShape) {
+        const { x1, y1, x2, y2 } = shapePreviewRef.current;
+        onDrawShape({
+          type: activeTool,
+          x1: Math.min(x1, x2),
+          y1: Math.min(y1, y2),
+          x2: Math.max(x1, x2),
+          y2: Math.max(y1, y2),
+          color: primaryColor,
+        });
+      }
+      shapeStartRef.current = null;
+      shapePreviewRef.current = null;
+      isDrawingRef.current = false;
+      drawCanvas();
+      return;
+    }
+
     isDrawingRef.current = false;
     lastPositionRef.current = null;
-  }, []);
+    shapeStartRef.current = null;
+    shapePreviewRef.current = null;
+  }, [activeTool, primaryColor, onDrawShape, drawCanvas]);
 
   const handlePointerLeave = useCallback(() => {
     isDrawingRef.current = false;
     lastPositionRef.current = null;
-  }, []);
+    shapeStartRef.current = null;
+    shapePreviewRef.current = null;
+    drawCanvas();
+  }, [drawCanvas]);
 
   useEffect(() => {
     drawCanvas();

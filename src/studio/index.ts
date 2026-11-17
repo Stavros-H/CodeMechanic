@@ -2,3 +2,4 @@
 export * from './types';
 export * from './store/useStudioStore';
 export * from './utils/palettes';
+export * from './hooks/useDrawingTools';
