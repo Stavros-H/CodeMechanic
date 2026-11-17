@@ -278,7 +278,8 @@ type Project = Omit<z.infer<typeof ProjectSchema>, "author_id"> & {
   author_id: string | null;
 };
 
-// Schema for creating a new project (without server-generated fields)
+// Schema for creating new projects (without server-generated fields).
+// author_id is nullable because guest drafts and remixes are owned on save.
 const CreateProjectSchema = ProjectSchema.omit({
   id: true,
   play_count: true,
@@ -290,6 +291,8 @@ const CreateProjectSchema = ProjectSchema.omit({
   thumbnail_url: true,
   is_published: true,
   is_template: true,
+}).extend({
+  author_id: z.string().min(1).nullable(),
 });
 
 type CreateProject = z.infer<typeof CreateProjectSchema>;

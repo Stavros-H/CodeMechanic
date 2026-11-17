@@ -70,32 +70,25 @@ export interface SelectionState {
 // Animation
 // ============================================================================
 
-export type AnimationState = 'idle' | 'run' | 'jump' | 'action' | 'hit' | 'death';
+export type AnimationState = 'idle' | 'run' | 'jump' | 'action';
+
+export const ANIMATION_STATES: AnimationState[] = ['idle', 'run', 'jump', 'action'];
 
 export interface AnimationFrame {
   id: string;
-  duration: number; // in milliseconds
-  pixels: PixelData[];
-}
-
-export interface Animation {
-  state: AnimationState;
-  frames: AnimationFrame[];
-  loop: boolean;
-  fps: number;
-}
-
-export interface SpriteAnimation {
-  [key: string]: Animation;
+  dataUrl: string;
 }
 
 // ============================================================================
 // Hitbox
 // ============================================================================
 
+export type HitboxType = 'terrain' | 'hurtbox' | 'hitbox';
+
 export interface StudioHitbox {
   id: string;
   name: string;
+  type: HitboxType;
   shape: 'rectangle' | 'circle';
   x: number;
   y: number;
@@ -104,6 +97,12 @@ export interface StudioHitbox {
   radius?: number;
   color: string;
 }
+
+export const HITBOX_TYPE_COLORS: Record<HitboxType, string> = {
+  terrain: '#22c55e',
+  hurtbox: '#3b82f6',
+  hitbox: '#ef4444',
+};
 
 export interface HitboxLayer {
   hitboxes: StudioHitbox[];
@@ -187,9 +186,6 @@ export type StudioAction =
   | { type: 'ADD_HITBOX'; payload: StudioHitbox }
   | { type: 'UPDATE_HITBOX'; payload: StudioHitbox }
   | { type: 'DELETE_HITBOX'; payload: string }
-  | { type: 'ADD_FRAME'; payload: { state: AnimationState; frame: AnimationFrame } }
-  | { type: 'UPDATE_FRAME'; payload: { state: AnimationState; index: number; frame: AnimationFrame } }
-  | { type: 'DELETE_FRAME'; payload: { state: AnimationState; index: number } }
   | { type: 'UNDO' }
   | { type: 'REDO' }
   | { type: 'RESET_SELECTION' }

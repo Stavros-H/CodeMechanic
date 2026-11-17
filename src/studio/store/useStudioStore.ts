@@ -15,16 +15,18 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import {
   StudioState,
+  CanvasState,
+  CanvasLayer,
+  HitboxLayer,
+  Bounds,
   DrawingTool,
   DrawingMode,
   PixelData,
   SelectionBox,
   StudioHitbox,
   AnimationState,
-  AnimationFrame,
   PaletteId,
   calculateBounds,
-  getDefaultPalette,
 } from '../types';
 import { Sprite, EntityRole, Resolution } from '@/schemas/projectSchemas';
 
@@ -159,14 +161,12 @@ interface StudioStore {
   addHitbox: (hitbox: StudioHitbox) => void;
   updateHitbox: (hitbox: StudioHitbox) => void;
   deleteHitbox: (hitboxId: string) => void;
+  setHitboxes: (hitboxes: StudioHitbox[]) => void;
   setActiveHitbox: (hitboxId: string | null) => void;
   
   // Animation actions
   setCurrentAnimationState: (state: AnimationState) => void;
   setCurrentFrameIndex: (index: number) => void;
-  addFrame: (state: AnimationState, frame: AnimationFrame) => void;
-  updateFrame: (state: AnimationState, index: number, frame: AnimationFrame) => void;
-  deleteFrame: (state: AnimationState, index: number) => void;
   playAnimation: () => void;
   stopAnimation: () => void;
   
@@ -563,6 +563,18 @@ export const useStudioStore = create<StudioStore>()(
           get().saveToHistory();
         },
         
+        setHitboxes: (hitboxes) => {
+          set({
+            studio: {
+              ...get().studio,
+              hitboxLayer: {
+                ...get().studio.hitboxLayer,
+                hitboxes,
+              },
+            },
+          });
+        },
+        
         setActiveHitbox: (hitboxId) => {
           set({
             studio: {
@@ -592,33 +604,6 @@ export const useStudioStore = create<StudioStore>()(
           });
         },
         
-        addFrame: (state, frame) => {
-          // This would be implemented with actual sprite data
-          set({
-            studio: {
-              ...get().studio,
-              isDirty: true,
-            },
-          });
-        },
-        
-        updateFrame: (state, index, frame) => {
-          set({
-            studio: {
-              ...get().studio,
-              isDirty: true,
-            },
-          });
-        },
-        
-        deleteFrame: (state, index) => {
-          set({
-            studio: {
-              ...get().studio,
-              isDirty: true,
-            },
-          });
-        },
         
         playAnimation: () => {
           set({
@@ -641,11 +626,12 @@ export const useStudioStore = create<StudioStore>()(
         
         // History actions
         saveToHistory: () => {
-          const { history, historyIndex, studio } = get();
+          const { history, historyIndex, layers } = get().studio;
+          const studio = get().studio;
           
           // If we're not at the end of history, truncate
           const newHistory = history.slice(0, historyIndex + 1);
-          const newLayers = studio.layers.map((layer) => ({
+          const newLayers = layers.map((layer) => ({
             ...layer,
             pixels: [...layer.pixels],
           }));
