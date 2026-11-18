@@ -1904,3 +1904,242 @@
   gap: 0.5rem;
   flex-wrap: wrap;
 }
+
+/* ============================================================================
+   Studio Workspace Header & Tabs
+   ============================================================================ */
+
+.studio-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.625rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.studio-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.studio-project-name {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unsaved-flag {
+  color: #f59e0b;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+}
+
+.studio-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.studio-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.studio-tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.875rem;
+  border-radius: 7px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+a.studio-tab:hover {
+  color: var(--ink);
+  background: var(--surface-raised);
+}
+
+.studio-tab.active {
+  color: var(--accent);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+}
+
+.studio-tab.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ============================================================================
+   Canvas Viewport Header (Zoom + Grid)
+   ============================================================================ */
+
+.canvas-viewport-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.375rem 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.zoom-level {
+  min-width: 3.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================================
+   Toolbox & Palettes Panel
+   ============================================================================ */
+
+.toolbox-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.toolbox-section h3 {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.toolbox-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.custom-color-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.custom-color-row input[type='color'] {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.custom-hex-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.375rem 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+/* ============================================================================
+   New Sprite Wizard
+   ============================================================================ */
+
+.wizard-step-label {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.role-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.role-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.75rem 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.role-tile:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.role-tile.selected {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.role-tile-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.role-tile-label {
+  text-transform: capitalize;
+}
+
+/* ============================================================================
+   Sprite Backpack Thumbnails
+   ============================================================================ */
+
+.entity-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}

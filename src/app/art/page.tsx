@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import { useGameStore } from '@/store/useGameStore';
+import { useGuardedNavigation } from '@/hooks/useUnsavedChangesGuard';
 import { useStudioStore } from '@/studio/store/useStudioStore';
 import { EntityRole, Resolution, Sprite } from '@/schemas/projectSchemas';
 import { ALL_PALETTES, getPaletteById } from '@/studio/utils/palettes';
@@ -409,6 +411,8 @@ interface HitboxCanvasProps {
   hitboxes: StudioHitbox[];
   activeHitboxId: string | null;
   onSelect: (id: string | null) => void;
+  onDrawHitbox: (x: number, y: number, width: number, height: number) => void;
+  defaultColor: string;
 }
 
 function HitboxCanvas({
@@ -418,8 +422,12 @@ function HitboxCanvas({
   hitboxes,
   activeHitboxId,
   onSelect,
+  onDrawHitbox,
+  defaultColor,
 }: HitboxCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+  const dragPreviewRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
 
   const drawHitboxes = useCallback(() => {
     const canvas = canvasRef.current;
@@ -481,14 +489,70 @@ function HitboxCanvas({
         ctx.fillText(hitbox.name, hitbox.x * scale + 2, Math.max(10, hitbox.y * scale - 4));
       }
     }
-  }, [width, height, scale, hitboxes, activeHitboxId]);
+
+    if (dragPreviewRef.current) {
+      const preview = dragPreviewRef.current;
+      ctx.strokeStyle = defaultColor;
+      ctx.setLineDash([4, 3]);
+      ctx.strokeRect(preview.x * scale, preview.y * scale, preview.width * scale, preview.height * scale);
+      ctx.setLineDash([]);
+    }
+  }, [width, height, scale, hitboxes, activeHitboxId, defaultColor]);
 
   useEffect(() => {
     drawHitboxes();
   }, [drawHitboxes]);
 
-  const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const toCanvasCoords = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return null;
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.floor((e.clientX - rect.left) / scale);
+      const y = Math.floor((e.clientY - rect.top) / scale);
+      if (x < 0 || x >= width || y < 0 || y >= height) return null;
+      return { x, y };
+    },
+    [scale, width, height]
+  );
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      dragStartRef.current = toCanvasCoords(e);
+      dragPreviewRef.current = null;
+    },
+    [toCanvasCoords]
+  );
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      const start = dragStartRef.current;
+      if (!start) return;
+      const current = toCanvasCoords(e);
+      if (!current) return;
+      dragPreviewRef.current = {
+        x: Math.min(start.x, current.x),
+        y: Math.min(start.y, current.y),
+        width: Math.abs(current.x - start.x),
+        height: Math.abs(current.y - start.y),
+      };
+      drawHitboxes();
+    },
+    [toCanvasCoords, drawHitboxes]
+  );
+
+  const handlePointerUpCanvas = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      const preview = dragPreviewRef.current;
+      dragStartRef.current = null;
+      dragPreviewRef.current = null;
+
+      if (preview && preview.width >= 1 && preview.height >= 1) {
+        onDrawHitbox(preview.x, preview.y, preview.width + 1, preview.height + 1);
+        drawHitboxes();
+        return;
+      }
+
       const canvas = canvasRef.current;
       if (!canvas) return;
 
@@ -519,8 +583,14 @@ function HitboxCanvas({
       }
       onSelect(null);
     },
-    [scale, hitboxes, onSelect]
+    [scale, hitboxes, onSelect, onDrawHitbox, drawHitboxes]
   );
+
+  const handlePointerLeaveCanvas = useCallback(() => {
+    dragStartRef.current = null;
+    dragPreviewRef.current = null;
+    drawHitboxes();
+  }, [drawHitboxes]);
 
   return (
     <canvas
@@ -530,9 +600,12 @@ function HitboxCanvas({
       style={{
         width: `${width * scale}px`,
         height: `${height * scale}px`,
-        cursor: 'pointer',
+        cursor: 'crosshair',
       }}
-      onClick={handleClick}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUpCanvas}
+      onPointerLeave={handlePointerLeaveCanvas}
     />
   );
 }
@@ -745,24 +818,20 @@ interface HitboxEditorProps {
   hitboxes: StudioHitbox[];
   activeHitboxId: string | null;
   resolution: number;
-  canAutoGenerate: boolean;
   onUpdate: (hitbox: StudioHitbox) => void;
   onDelete: (id: string) => void;
   onSelect: (id: string | null) => void;
   onAdd: () => void;
-  onAutoGenerate: () => void;
 }
 
 function HitboxEditor({
   hitboxes,
   activeHitboxId,
   resolution,
-  canAutoGenerate,
   onUpdate,
   onDelete,
   onSelect,
   onAdd,
-  onAutoGenerate,
 }: HitboxEditorProps) {
   const active = hitboxes.find((h) => h.id === activeHitboxId) ?? hitboxes[0] ?? null;
 
@@ -884,18 +953,6 @@ function HitboxEditor({
         <button className="btn btn-small btn-primary" onClick={onAdd}>
           + Add Hitbox
         </button>
-        <button
-          className="btn btn-small btn-ghost"
-          onClick={onAutoGenerate}
-          disabled={!canAutoGenerate}
-          title={
-            canAutoGenerate
-              ? 'Analyze frame alpha channel to generate tight bounds'
-              : 'Upload or paint a frame first'
-          }
-        >
-          ⬚ Auto-Generate Bounds
-        </button>
       </div>
     </div>
   );
@@ -908,6 +965,9 @@ function HitboxEditor({
 export default function PixelHitboxStudio() {
   const {
     currentProject,
+    isDirty,
+    isAuthenticated,
+    setCurrentProject,
     setActiveTab,
     setIsDirty,
     createNewProject,
@@ -977,6 +1037,25 @@ export default function PixelHitboxStudio() {
   const activeAnimationState = studio.currentAnimationState as AnimationState;
   const activeFrames = selectedSprite?.frames?.[activeAnimationState] ?? [];
   const isHitboxLayer = studio.activeLayerId === 'hitbox-layer';
+  const canAutoGenerate = activeFrames.length > 0 || artPixels.length > 0;
+
+  const { navigateTo } = useGuardedNavigation();
+  const [isSaving, setIsSaving] = useState(false);
+  const [wizardStep, setWizardStep] = useState(0);
+  const [customHex, setCustomHex] = useState(studio.primaryColor);
+
+  const allRoles = useMemo(
+    () => ENTITY_CATEGORIES.flatMap((category) => category.roles),
+    []
+  );
+
+  const handleSelectColor = useCallback(
+    (color: string) => {
+      setPrimaryColor(color);
+      setCustomHex(color);
+    },
+    [setPrimaryColor]
+  );
 
   // Load the selected sprite's hitboxes into the hitbox layer when the sprite changes
   const syncedSpriteIdRef = useRef<string | null>(null);
@@ -1217,6 +1296,51 @@ export default function PixelHitboxStudio() {
   };
 
   // ------------------------------------------------------------------------
+  // Project save
+  // ------------------------------------------------------------------------
+
+  const handleSave = async () => {
+    const project = useGameStore.getState().currentProject;
+    if (!project) return;
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(project),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        console.error(result?.error ?? 'The project could not be saved.');
+        return;
+      }
+      setCurrentProject(result.project);
+    } catch {
+      console.error('The project could not be saved. Check your connection and try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // ------------------------------------------------------------------------
+  // Zoom controls
+  // ------------------------------------------------------------------------
+
+  const handleZoomIn = () => {
+    const idx = CANVAS_SCALE_OPTIONS.indexOf(canvasScale);
+    if (idx >= 0 && idx < CANVAS_SCALE_OPTIONS.length - 1) {
+      setCanvasScale(CANVAS_SCALE_OPTIONS[idx + 1]);
+    }
+  };
+
+  const handleZoomOut = () => {
+    const idx = CANVAS_SCALE_OPTIONS.indexOf(canvasScale);
+    if (idx > 0) {
+      setCanvasScale(CANVAS_SCALE_OPTIONS[idx - 1]);
+    }
+  };
+
+  // ------------------------------------------------------------------------
   // Hitboxes
   // ------------------------------------------------------------------------
 
@@ -1299,6 +1423,31 @@ export default function PixelHitboxStudio() {
     setActiveHitbox(hitbox.id);
   };
 
+  const handleSwapColors = () => {
+    const temp = studio.primaryColor;
+    setPrimaryColor(studio.secondaryColor);
+    setSecondaryColor(temp);
+  };
+
+  const handleDrawHitbox = useCallback(
+    (x: number, y: number, width: number, height: number) => {
+      const hitbox: StudioHitbox = {
+        id: `hb_${generateId()}`,
+        name: `brush_hitbox_${studio.hitboxLayer.hitboxes.length + 1}`,
+        type: 'hurtbox',
+        shape: 'rectangle',
+        x,
+        y,
+        width,
+        height,
+        color: HITBOX_TYPE_COLORS.hurtbox,
+      };
+      persistHitboxes([...studio.hitboxLayer.hitboxes, hitbox]);
+      setActiveHitbox(hitbox.id);
+    },
+    [studio.hitboxLayer.hitboxes, persistHitboxes, setActiveHitbox]
+  );
+
   // ------------------------------------------------------------------------
   // Render
   // ------------------------------------------------------------------------
@@ -1319,56 +1468,66 @@ export default function PixelHitboxStudio() {
               </button>
             </div>
             <div className="modal-body">
-              <div className="form-group">
-                <label htmlFor="sprite-name">Name</label>
-                <input
-                  type="text"
-                  id="sprite-name"
-                  value={newSpriteName}
-                  onChange={(e) => setNewSpriteName(e.target.value)}
-                  placeholder="My Character"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="sprite-role">Role</label>
-                <select
-                  id="sprite-role"
-                  value={newSpriteRole}
-                  onChange={(e) => setNewSpriteRole(e.target.value as EntityRole)}
-                >
-                  <option value="player_1">Player 1</option>
-                  <option value="player_2">Player 2</option>
-                  <option value="enemy">Enemy</option>
-                  <option value="hazard">Hazard</option>
-                  <option value="pickup">Pickup</option>
-                  <option value="goal">Goal</option>
-                  <option value="tile">Tile</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="sprite-resolution">Resolution</label>
-                <select
-                  id="sprite-resolution"
-                  value={newSpriteResolution}
-                  onChange={(e) =>
-                    setNewSpriteResolution(Number(e.target.value) as Resolution)
-                  }
-                >
-                  {VALID_RESOLUTIONS.map((res) => (
-                    <option key={res} value={res}>
-                      {res}×{res}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="modal-actions">
-                <button className="btn btn-primary" onClick={handleCreateSprite}>
-                  Create Sprite
-                </button>
-                <button className="btn btn-ghost" onClick={() => setShowNewSpriteModal(false)}>
-                  Cancel
-                </button>
-              </div>
+              {wizardStep === 0 ? (
+                <>
+                  <p className="wizard-step-label">Step 1 of 2 — Choose a role</p>
+                  <div className="role-tile-grid">
+                    {allRoles.map((role) => (
+                      <button
+                        key={role}
+                        className={`role-tile ${newSpriteRole === role ? 'selected' : ''}`}
+                        onClick={() => {
+                          setNewSpriteRole(role);
+                          setWizardStep(1);
+                        }}
+                      >
+                        <span className="role-tile-icon">{getRoleIcon(role)}</span>
+                        <span className="role-tile-label">{role.replace('_', ' ')}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="wizard-step-label">
+                    Step 2 of 2 — Configure {newSpriteRole.replace('_', ' ')}
+                  </p>
+                  <div className="form-group">
+                    <label htmlFor="sprite-name">Name</label>
+                    <input
+                      type="text"
+                      id="sprite-name"
+                      value={newSpriteName}
+                      onChange={(e) => setNewSpriteName(e.target.value)}
+                      placeholder="My Character"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="sprite-resolution">Resolution</label>
+                    <select
+                      id="sprite-resolution"
+                      value={newSpriteResolution}
+                      onChange={(e) =>
+                        setNewSpriteResolution(Number(e.target.value) as Resolution)
+                      }
+                    >
+                      {VALID_RESOLUTIONS.map((res) => (
+                        <option key={res} value={res}>
+                          {res}×{res}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="modal-actions">
+                    <button className="btn btn-ghost" onClick={() => setWizardStep(0)}>
+                      ← Back
+                    </button>
+                    <button className="btn btn-primary" onClick={handleCreateSprite}>
+                      Create Sprite
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -1387,6 +1546,58 @@ export default function PixelHitboxStudio() {
 
       {/* Pixel & Hitbox Studio Content */}
       <div className="view-container view-studio view-art">
+        <header className="studio-header">
+          <div className="studio-header-left">
+            <button
+              className="control-btn"
+              onClick={() => navigateTo('/')}
+            >
+              ← Back to Hub
+            </button>
+            <span className="studio-project-name">
+              Project: {currentProject?.title ?? 'Untitled Project'}
+              {isDirty && (
+                <span className="unsaved-flag" title="This project has unsaved changes">
+                  *
+                </span>
+              )}
+            </span>
+          </div>
+          <div className="studio-header-right">
+            {isAuthenticated ? (
+              <button
+                className="btn btn-small btn-primary"
+                onClick={handleSave}
+                disabled={isSaving || !isDirty}
+              >
+                {isSaving ? 'Saving…' : 'Save'}
+              </button>
+            ) : (
+              <Link className="btn btn-small btn-primary" href="/sign-up">
+                Sign Up to Save
+              </Link>
+            )}
+            <button
+              className="btn btn-small btn-ghost"
+              onClick={() => navigateTo(`/play/${currentProject?.id ?? 'draft'}`)}
+            >
+              ▶ Playtest
+            </button>
+          </div>
+        </header>
+        <nav className="studio-tabs">
+          <span className="studio-tab active">Pixel &amp; Hitbox Studio</span>
+          <Link className="studio-tab" href="/rules">
+            Mechanics &amp; AI Rules
+          </Link>
+          <span
+            className="studio-tab disabled"
+            title="Coming in Phase 5"
+            aria-disabled="true"
+          >
+            Level &amp; Wave Painter
+          </span>
+        </nav>
         <div className="studio-layout">
           {/* Sprite Library Sidebar */}
           <aside className="sprite-library">
@@ -1394,7 +1605,10 @@ export default function PixelHitboxStudio() {
               <h2>Sprite Library</h2>
               <button
                 className="btn btn-small btn-primary"
-                onClick={() => setShowNewSpriteModal(true)}
+                onClick={() => {
+                  setWizardStep(0);
+                  setShowNewSpriteModal(true);
+                }}
               >
                 <span className="btn-icon">+</span>
                 <span>New Sprite</span>
@@ -1415,17 +1629,27 @@ export default function PixelHitboxStudio() {
                           </div>
                         );
                       }
-                      return roleSprites.map((sprite) => (
-                        <button
-                          key={sprite.id}
-                          className={`entity-item ${selectedSprite?.id === sprite.id ? 'active' : ''}`}
-                          onClick={() => handleSelectSprite(sprite)}
-                        >
-                          <span className="entity-icon">{getRoleIcon(sprite.role)}</span>
-                          <span className="entity-label">{sprite.name}</span>
-                          <span className="entity-res">{sprite.resolution}²</span>
-                        </button>
-                      ));
+                      return roleSprites.map((sprite) => {
+                        const thumb =
+                          sprite.frames?.idle?.[0] ??
+                          Object.values(sprite.frames ?? {})[0]?.[0] ??
+                          null;
+                        return (
+                          <button
+                            key={sprite.id}
+                            className={`entity-item ${selectedSprite?.id === sprite.id ? 'active' : ''}`}
+                            onClick={() => handleSelectSprite(sprite)}
+                          >
+                            {thumb ? (
+                              <img className="entity-thumb" src={thumb} alt="" />
+                            ) : (
+                              <span className="entity-icon">{getRoleIcon(sprite.role)}</span>
+                            )}
+                            <span className="entity-label">{sprite.name}</span>
+                            <span className="entity-res">{sprite.resolution}²</span>
+                          </button>
+                        );
+                      });
                     })}
                   </div>
                 </div>
@@ -1470,6 +1694,38 @@ export default function PixelHitboxStudio() {
               </div>
             </div>
 
+            {/* Canvas Viewport Controls */}
+            <div className="canvas-viewport-header">
+              <div className="zoom-controls">
+                <span className="control-label">Zoom</span>
+                <button
+                  className="control-btn"
+                  onClick={handleZoomOut}
+                  disabled={canvasScale === CANVAS_SCALE_OPTIONS[0]}
+                  aria-label="Zoom out"
+                >
+                  −
+                </button>
+                <span className="zoom-level">{canvasScale * 100}%</span>
+                <button
+                  className="control-btn"
+                  onClick={handleZoomIn}
+                  disabled={
+                    canvasScale === CANVAS_SCALE_OPTIONS[CANVAS_SCALE_OPTIONS.length - 1]
+                  }
+                  aria-label="Zoom in"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                className={`control-btn ${studio.canvas.showGrid ? 'active' : ''}`}
+                onClick={() => setShowGrid(!studio.canvas.showGrid)}
+              >
+                # Grid {studio.canvas.showGrid ? 'ON' : 'OFF'}
+              </button>
+            </div>
+
             {/* Dual-Layer Canvas */}
             <div className="dual-canvas">
               {!isHitboxLayer ? (
@@ -1495,75 +1751,15 @@ export default function PixelHitboxStudio() {
                   hitboxes={studio.hitboxLayer.hitboxes}
                   activeHitboxId={studio.activeHitboxId}
                   onSelect={setActiveHitbox}
+                  onDrawHitbox={handleDrawHitbox}
+                  defaultColor={HITBOX_TYPE_COLORS.hurtbox}
                 />
               )}
             </div>
 
             {/* Canvas Controls */}
             <div className="canvas-controls">
-              {!isHitboxLayer && (
-                <div className="control-group">
-                  <span className="control-label">Tools:</span>
-                  {(['pencil', 'bucket', 'eraser', 'eyedropper'] as DrawingTool[]).map((tool) => (
-                    <button
-                      key={tool}
-                      className={`control-btn ${studio.activeTool === tool ? 'active' : ''}`}
-                      onClick={() => setActiveTool(tool)}
-                    >
-                      {tool === 'pencil' && '✏️'}
-                      {tool === 'bucket' && '🪣'}
-                      {tool === 'eraser' && '🧽'}
-                      {tool === 'eyedropper' && '🎯'}
-                      <span className="tool-name">
-                        {tool.charAt(0).toUpperCase() + tool.slice(1)}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {!isHitboxLayer && (
-                <div className="control-group">
-                  <span className="control-label">Colors:</span>
-                  <ColorPicker
-                    colors={activePalette.colors}
-                    selectedColor={studio.primaryColor}
-                    onSelectColor={setPrimaryColor}
-                  />
-                  <button
-                    className="control-btn swap-btn"
-                    onClick={() => {
-                      const temp = studio.primaryColor;
-                      setPrimaryColor(studio.secondaryColor);
-                      setSecondaryColor(temp);
-                    }}
-                    title="Swap colors"
-                  >
-                    ⇄
-                  </button>
-                </div>
-              )}
-
               <div className="control-group">
-                <span className="control-label">Scale:</span>
-                {CANVAS_SCALE_OPTIONS.map((scale) => (
-                  <button
-                    key={scale}
-                    className={`control-btn ${canvasScale === scale ? 'active' : ''}`}
-                    onClick={() => setCanvasScale(scale)}
-                  >
-                    {scale}×
-                  </button>
-                ))}
-              </div>
-
-              <div className="control-group">
-                <button
-                  className={`control-btn ${studio.canvas.showGrid ? 'active' : ''}`}
-                  onClick={() => setShowGrid(!studio.canvas.showGrid)}
-                >
-                  # Grid
-                </button>
                 <button
                   className="control-btn"
                   onClick={handleSavePixelsAsFrame}
@@ -1585,11 +1781,119 @@ export default function PixelHitboxStudio() {
             </div>
           </main>
 
-          {/* Properties Panel */}
+          {/* Toolbox & Palettes Panel */}
           <aside className="properties-panel">
             <div className="panel-header">
-              <h2>Properties</h2>
+              <h2>Toolbox &amp; Palettes</h2>
             </div>
+
+            {!isHitboxLayer && (
+              <div className="toolbox-section">
+                <h3>Tools</h3>
+                <div className="toolbox-tools">
+                  {(
+                    [
+                      'pencil',
+                      'bucket',
+                      'eraser',
+                      'eyedropper',
+                      'rectangle',
+                      'circle',
+                      'line',
+                    ] as DrawingTool[]
+                  ).map((tool) => (
+                    <button
+                      key={tool}
+                      className={`control-btn ${studio.activeTool === tool ? 'active' : ''}`}
+                      onClick={() => setActiveTool(tool)}
+                    >
+                      {tool === 'pencil' && '✏️'}
+                      {tool === 'bucket' && '🪣'}
+                      {tool === 'eraser' && '🧽'}
+                      {tool === 'eyedropper' && '🎯'}
+                      {tool === 'rectangle' && '▭'}
+                      {tool === 'circle' && '◯'}
+                      {tool === 'line' && '╱'}
+                      <span className="tool-name">
+                        {tool.charAt(0).toUpperCase() + tool.slice(1)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="toolbox-section">
+              <h3>Palettes</h3>
+              <select
+                value={studio.activePalette}
+                onChange={(e) =>
+                  setActivePalette(e.target.value as typeof studio.activePalette)
+                }
+              >
+                {ALL_PALETTES.map((palette) => (
+                  <option key={palette.id} value={palette.id}>
+                    {palette.name}
+                  </option>
+                ))}
+              </select>
+              <ColorPicker
+                colors={activePalette.colors}
+                selectedColor={studio.primaryColor}
+                onSelectColor={handleSelectColor}
+              />
+              <div className="custom-color-row">
+                <input
+                  type="color"
+                  value={
+                    /^#[0-9a-fA-F]{6}$/.test(studio.primaryColor)
+                      ? studio.primaryColor
+                      : '#000000'
+                  }
+                  onChange={(e) => handleSelectColor(e.target.value)}
+                  title="Pick a custom color"
+                  aria-label="Custom color"
+                />
+                <input
+                  type="text"
+                  className="custom-hex-input"
+                  value={customHex}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setCustomHex(value);
+                    if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)) {
+                      handleSelectColor(value);
+                    }
+                  }}
+                  placeholder="#rrggbb"
+                  aria-label="Custom color hex"
+                />
+                <button
+                  className="control-btn swap-btn"
+                  onClick={handleSwapColors}
+                  title="Swap colors"
+                >
+                  ⇄
+                </button>
+              </div>
+            </div>
+
+            <div className="toolbox-section">
+              <h3>Generator</h3>
+              <button
+                className="btn btn-small btn-ghost"
+                onClick={handleAutoGenerateHitbox}
+                disabled={!canAutoGenerate}
+                title={
+                  canAutoGenerate
+                    ? 'Analyze frame alpha channel to generate tight bounds'
+                    : 'Upload or paint a frame first'
+                }
+              >
+                ✏ Auto-Generate Hitbox from Alpha
+              </button>
+            </div>
+
             {selectedSprite ? (
               <div className="sprite-properties">
                 <div className="property-group">
@@ -1620,32 +1924,15 @@ export default function PixelHitboxStudio() {
                   <span>{selectedSprite.role.replace('_', ' ')}</span>
                 </div>
                 <div className="property-group">
-                  <label>Palette</label>
-                  <select
-                    value={studio.activePalette}
-                    onChange={(e) =>
-                      setActivePalette(e.target.value as typeof studio.activePalette)
-                    }
-                  >
-                    {ALL_PALETTES.map((palette) => (
-                      <option key={palette.id} value={palette.id}>
-                        {palette.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="property-group">
                   <label>Hitboxes</label>
                   <HitboxEditor
                     hitboxes={studio.hitboxLayer.hitboxes}
                     activeHitboxId={studio.activeHitboxId}
                     resolution={resolution}
-                    canAutoGenerate={activeFrames.length > 0 || artPixels.length > 0}
                     onUpdate={handleUpdateHitbox}
                     onDelete={handleDeleteHitbox}
                     onSelect={setActiveHitbox}
                     onAdd={handleAddHitbox}
-                    onAutoGenerate={handleAutoGenerateHitbox}
                   />
                 </div>
                 {projectSprites.length > 1 && (
