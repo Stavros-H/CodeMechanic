@@ -81,7 +81,6 @@ export function Navbar() {
     if (href.startsWith('/play/') && pathname.startsWith('/play/')) return true;
     if (href.startsWith('/art') && pathname.startsWith('/art')) return true;
     if (href.startsWith('/rules') && pathname.startsWith('/rules')) return true;
-    if (href.startsWith('/studio/') && pathname.startsWith('/studio/')) return true;
     
     return false;
   };
@@ -140,7 +139,7 @@ export function Navbar() {
   };
 
   // Guest Sandbox Mode indicator
-  const isInStudio = pathname.startsWith('/studio') || pathname.startsWith('/art') || pathname.startsWith('/rules');
+  const isInStudio = pathname.startsWith('/art') || pathname.startsWith('/rules');
   const showGuestCTA = isLoaded && !isSignedIn && isInStudio;
 
   return (

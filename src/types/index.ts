@@ -55,8 +55,9 @@ export type ViewRoute =
   | '/' 
   | '/explore' 
   | '/play/:id' 
-  | '/studio/art' 
-  | '/studio/rules';
+  | '/art'
+  | '/rules'
+  | '/projects';
 
 export type ViewId = 'hub' | 'explore' | 'play' | 'art' | 'rules';
 

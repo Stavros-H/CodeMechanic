@@ -36,7 +36,7 @@ export default function ArcadeHub() {
             <div className="hero-actions">
               <button
                 className="btn btn-primary btn-large"
-                onClick={() => navigateTo('/studio/art')}
+                onClick={() => navigateTo('/art')}
               >
                 <span className="btn-icon">+</span>
                 <span>Create New Project</span>

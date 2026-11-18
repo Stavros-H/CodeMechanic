@@ -728,6 +728,53 @@ export const useStudioStore = create<StudioStore>()(
             activeHitboxId: state.studio.activeHitboxId,
           },
         }),
+        // Persisted state is intentionally partial. Zustand's default merge
+        // replaces the nested `studio` object wholesale, which removes
+        // runtime-only fields such as `layers` and crashes the editor after
+        // navigation or a reload.
+        merge: (persistedState, currentState) => {
+          const persistedStudio = (
+            persistedState as { studio?: Partial<StudioState> } | undefined
+          )?.studio;
+
+          if (!persistedStudio || typeof persistedStudio !== 'object') {
+            return currentState;
+          }
+
+          const persistedLayers = Array.isArray(persistedStudio.layers)
+            ? persistedStudio.layers.filter(
+                (layer): layer is CanvasLayer =>
+                  Boolean(layer) &&
+                  typeof layer.id === 'string' &&
+                  Array.isArray(layer.pixels)
+              )
+            : [];
+          const layers =
+            persistedLayers.length > 0 ? persistedLayers : currentState.studio.layers;
+          const layerIds = new Set(layers.map((layer) => layer.id));
+          const activeLayerId =
+            persistedStudio.activeLayerId && layerIds.has(persistedStudio.activeLayerId)
+              ? persistedStudio.activeLayerId
+              : layers[0]?.id ?? currentState.studio.activeLayerId;
+
+          return {
+            ...currentState,
+            studio: {
+              ...currentState.studio,
+              ...persistedStudio,
+              canvas: {
+                ...currentState.studio.canvas,
+                ...(persistedStudio.canvas ?? {}),
+              },
+              layers,
+              activeLayerId,
+              hitboxLayer: {
+                ...currentState.studio.hitboxLayer,
+                ...(persistedStudio.hitboxLayer ?? {}),
+              },
+            },
+          };
+        },
       }
     ),
     { name: 'StudioStore' }

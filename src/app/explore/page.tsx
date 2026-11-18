@@ -125,7 +125,7 @@ export default function ExploreDirectory() {
           <div className="explore-actions">
             <button
               className="btn btn-primary"
-              onClick={() => navigateTo('/studio/art')}
+              onClick={() => navigateTo('/art')}
             >
               <span className="btn-icon">+</span>
               <span>Create New Project</span>
