@@ -818,20 +818,30 @@ interface HitboxEditorProps {
   hitboxes: StudioHitbox[];
   activeHitboxId: string | null;
   resolution: number;
+  stateLabel: string;
+  isCustomSet: boolean;
+  canDeleteLast: boolean;
   onUpdate: (hitbox: StudioHitbox) => void;
   onDelete: (id: string) => void;
   onSelect: (id: string | null) => void;
   onAdd: () => void;
+  onStartCustomSet: () => void;
+  onRevertToShared: () => void;
 }
 
 function HitboxEditor({
   hitboxes,
   activeHitboxId,
   resolution,
+  stateLabel,
+  isCustomSet,
+  canDeleteLast,
   onUpdate,
   onDelete,
   onSelect,
   onAdd,
+  onStartCustomSet,
+  onRevertToShared,
 }: HitboxEditorProps) {
   const active = hitboxes.find((h) => h.id === activeHitboxId) ?? hitboxes[0] ?? null;
 
@@ -854,6 +864,22 @@ function HitboxEditor({
 
   return (
     <div className="hitbox-editor">
+      <div className="hitbox-context">
+        <span className="hitbox-context-label">
+          {isCustomSet
+            ? `Custom set — ${stateLabel} frames`
+            : 'Shared set — all frames'}
+        </span>
+        {isCustomSet ? (
+          <button className="control-btn" onClick={onRevertToShared}>
+            Use shared set
+          </button>
+        ) : (
+          <button className="control-btn" onClick={onStartCustomSet}>
+            Custom for {stateLabel}
+          </button>
+        )}
+      </div>
       <div className="hitbox-editor-row">
         <label className="hitbox-field">
           <span>Shape</span>
@@ -883,9 +909,10 @@ function HitboxEditor({
               onUpdate({ ...active, type, color: HITBOX_TYPE_COLORS[type] });
             }}
           >
-            <option value="terrain">Terrain (green)</option>
             <option value="hurtbox">Hurtbox (blue)</option>
             <option value="hitbox">Hitbox (red)</option>
+            <option value="terrain">Terrain (green)</option>
+            <option value="interactive">Interactive (orange)</option>
           </select>
         </label>
       </div>
@@ -929,16 +956,24 @@ function HitboxEditor({
                 : `${hitbox.width ?? 8}×${hitbox.height ?? 8}`}
             </span>
             <span
-              className="hitbox-delete"
+              className={`hitbox-delete ${!canDeleteLast && hitboxes.length <= 1 ? 'disabled' : ''}`}
               role="button"
               tabIndex={0}
+              aria-disabled={!canDeleteLast && hitboxes.length <= 1}
+              title={
+                !canDeleteLast && hitboxes.length <= 1
+                  ? 'Shared sets must keep at least one hitbox — start a custom set to remove it'
+                  : 'Delete hitbox'
+              }
               onClick={(e) => {
                 e.stopPropagation();
+                if (!canDeleteLast && hitboxes.length <= 1) return;
                 onDelete(hitbox.id);
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.stopPropagation();
+                  if (!canDeleteLast && hitboxes.length <= 1) return;
                   onDelete(hitbox.id);
                 }
               }}
@@ -1030,7 +1065,6 @@ export default function PixelHitboxStudio() {
     height: number;
   } | null>(null);
 
-  const entityCategories = ENTITY_CATEGORIES;
   const activePalette = getPaletteById(studio.activePalette) || ALL_PALETTES[0];
   const artLayer = studio.layers.find((l) => l.id === 'art-layer');
   const artPixels = useMemo(() => artLayer?.pixels ?? [], [artLayer]);
@@ -1038,6 +1072,23 @@ export default function PixelHitboxStudio() {
   const activeFrames = selectedSprite?.frames?.[activeAnimationState] ?? [];
   const isHitboxLayer = studio.activeLayerId === 'hitbox-layer';
   const canAutoGenerate = activeFrames.length > 0 || artPixels.length > 0;
+  const sharedHitboxes = useMemo(
+    () => selectedSprite?.hitboxes ?? [],
+    [selectedSprite]
+  );
+  const stateHitboxes = useMemo(
+    () => selectedSprite?.state_hitboxes ?? {},
+    [selectedSprite]
+  );
+  const hasCustomHitboxes = Boolean(stateHitboxes[activeAnimationState]);
+
+  const visibleHitboxSource = useMemo(
+    () =>
+      hasCustomHitboxes
+        ? stateHitboxes[activeAnimationState] ?? []
+        : sharedHitboxes,
+    [hasCustomHitboxes, stateHitboxes, activeAnimationState, sharedHitboxes]
+  );
 
   const { navigateTo } = useGuardedNavigation();
   const [isSaving, setIsSaving] = useState(false);
@@ -1057,17 +1108,24 @@ export default function PixelHitboxStudio() {
     [setPrimaryColor]
   );
 
-  // Load the selected sprite's hitboxes into the hitbox layer when the sprite changes
+  // Load the visible hitbox set (shared or per-state custom) into the hitbox
+  // layer when the sprite, animation state, or set kind changes
   const syncedSpriteIdRef = useRef<string | null>(null);
+  const syncedSetKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (selectedSprite && selectedSprite.id !== syncedSpriteIdRef.current) {
+    if (!selectedSprite) return;
+    const isNewSprite = selectedSprite.id !== syncedSpriteIdRef.current;
+    if (isNewSprite) {
       syncedSpriteIdRef.current = selectedSprite.id;
-      setHitboxes(schemaHitboxesToStudio(selectedSprite.hitboxes ?? []));
       setCurrentAnimationState('idle');
       setCurrentFrameIndex(0);
       stopAnimation();
     }
-  }, [selectedSprite, setHitboxes, setCurrentAnimationState, setCurrentFrameIndex, stopAnimation]);
+    const setKey = `${selectedSprite.id}:${activeAnimationState}:${hasCustomHitboxes ? 'custom' : 'shared'}`;
+    if (!isNewSprite && setKey === syncedSetKeyRef.current) return;
+    syncedSetKeyRef.current = setKey;
+    setHitboxes(schemaHitboxesToStudio(visibleHitboxSource));
+  }, [selectedSprite, activeAnimationState, hasCustomHitboxes, visibleHitboxSource, setHitboxes, setCurrentAnimationState, setCurrentFrameIndex, stopAnimation]);
 
   // Playback loop
   useEffect(() => {
@@ -1127,7 +1185,7 @@ export default function PixelHitboxStudio() {
   };
 
   const handleDeleteSprite = () => {
-    if (!selectedSprite || projectSprites.length <= 1) return;
+    if (!selectedSprite) return;
     const next = projectSprites.find((s) => s.id !== selectedSprite.id) ?? null;
     removeSprite(selectedSprite.id);
     setActiveSprite(next);
@@ -1348,14 +1406,32 @@ export default function PixelHitboxStudio() {
     (hitboxes: StudioHitbox[]) => {
       setHitboxes(hitboxes);
       if (selectedSprite) {
-        updateSprite({
-          ...selectedSprite,
-          hitboxes: studioHitboxesToSchema(hitboxes),
-        });
+        const schemaHitboxes = studioHitboxesToSchema(hitboxes);
+        if (hasCustomHitboxes) {
+          updateSprite({
+            ...selectedSprite,
+            state_hitboxes: {
+              ...(selectedSprite.state_hitboxes ?? {}),
+              [activeAnimationState]: schemaHitboxes,
+            },
+          });
+        } else {
+          updateSprite({
+            ...selectedSprite,
+            hitboxes: schemaHitboxes,
+          });
+        }
       }
       setIsDirty(true);
     },
-    [selectedSprite, setHitboxes, updateSprite, setIsDirty]
+    [
+      selectedSprite,
+      hasCustomHitboxes,
+      activeAnimationState,
+      setHitboxes,
+      updateSprite,
+      setIsDirty,
+    ]
   );
 
   const handleAddHitbox = () => {
@@ -1383,6 +1459,7 @@ export default function PixelHitboxStudio() {
   };
 
   const handleDeleteHitbox = (id: string) => {
+    if (!hasCustomHitboxes && studio.hitboxLayer.hitboxes.length <= 1) return;
     persistHitboxes(studio.hitboxLayer.hitboxes.filter((h) => h.id !== id));
     setActiveHitbox(null);
   };
@@ -1421,6 +1498,26 @@ export default function PixelHitboxStudio() {
     };
     persistHitboxes([...studio.hitboxLayer.hitboxes, hitbox]);
     setActiveHitbox(hitbox.id);
+  };
+
+  const handleStartCustomSet = () => {
+    if (!selectedSprite || hasCustomHitboxes) return;
+    updateSprite({
+      ...selectedSprite,
+      state_hitboxes: {
+        ...(selectedSprite.state_hitboxes ?? {}),
+        [activeAnimationState]: selectedSprite.hitboxes,
+      },
+    });
+    setIsDirty(true);
+  };
+
+  const handleRevertToSharedSet = () => {
+    if (!selectedSprite || !hasCustomHitboxes) return;
+    const nextSets = { ...(selectedSprite.state_hitboxes ?? {}) };
+    delete nextSets[activeAnimationState];
+    updateSprite({ ...selectedSprite, state_hitboxes: nextSets });
+    setIsDirty(true);
   };
 
   const handleSwapColors = () => {
@@ -1599,10 +1696,10 @@ export default function PixelHitboxStudio() {
           </span>
         </nav>
         <div className="studio-layout">
-          {/* Sprite Library Sidebar */}
-          <aside className="sprite-library">
+          {/* Sprite Backpack */}
+        <aside className="sprite-library">
             <div className="library-header">
-              <h2>Sprite Library</h2>
+              <h2>Sprite Backpack</h2>
               <button
                 className="btn btn-small btn-primary"
                 onClick={() => {
@@ -1615,45 +1712,45 @@ export default function PixelHitboxStudio() {
               </button>
             </div>
             <div className="entity-categories">
-              {entityCategories.map((category) => (
-                <div key={category.label} className="entity-category">
-                  <h3>{category.label}</h3>
-                  <div className="entity-list">
-                    {category.roles.map((role) => {
-                      const roleSprites = projectSprites.filter((s) => s.role === role);
-                      if (roleSprites.length === 0) {
-                        return (
-                          <div key={role} className="entity-item empty">
-                            <span className="entity-icon">{getRoleIcon(role)}</span>
-                            <span className="entity-label">No {role.replace('_', ' ')}</span>
-                          </div>
-                        );
-                      }
-                      return roleSprites.map((sprite) => {
-                        const thumb =
-                          sprite.frames?.idle?.[0] ??
-                          Object.values(sprite.frames ?? {})[0]?.[0] ??
-                          null;
-                        return (
-                          <button
-                            key={sprite.id}
-                            className={`entity-item ${selectedSprite?.id === sprite.id ? 'active' : ''}`}
-                            onClick={() => handleSelectSprite(sprite)}
-                          >
-                            {thumb ? (
-                              <img className="entity-thumb" src={thumb} alt="" />
-                            ) : (
-                              <span className="entity-icon">{getRoleIcon(sprite.role)}</span>
-                            )}
-                            <span className="entity-label">{sprite.name}</span>
-                            <span className="entity-res">{sprite.resolution}²</span>
-                          </button>
-                        );
-                      });
-                    })}
-                  </div>
+              <div className="entity-category">
+                <h3>
+                  {projectSprites.length === 0
+                    ? 'Empty backpack'
+                    : `${projectSprites.length} sprite${projectSprites.length === 1 ? '' : 's'}`}
+                </h3>
+                <div className="entity-list">
+                  {projectSprites.length === 0 ? (
+                    <div className="entity-item empty">
+                      <span className="entity-icon">{getRoleIcon('player_1')}</span>
+                      <span className="entity-label">
+                        Make a sprite to use it in your project
+                      </span>
+                    </div>
+                  ) : (
+                    projectSprites.map((sprite) => {
+                      const thumb =
+                        sprite.frames?.idle?.[0] ??
+                        Object.values(sprite.frames ?? {})[0]?.[0] ??
+                        null;
+                      return (
+                        <button
+                          key={sprite.id}
+                          className={`entity-item ${selectedSprite?.id === sprite.id ? 'active' : ''}`}
+                          onClick={() => handleSelectSprite(sprite)}
+                        >
+                          {thumb ? (
+                            <img className="entity-thumb" src={thumb} alt="" />
+                          ) : (
+                            <span className="entity-icon">{getRoleIcon(sprite.role)}</span>
+                          )}
+                          <span className="entity-label">{sprite.name}</span>
+                          <span className="entity-res">{sprite.resolution}²</span>
+                        </button>
+                      );
+                    })
+                  )}
                 </div>
-              ))}
+              </div>
             </div>
           </aside>
 
@@ -1929,24 +2026,27 @@ export default function PixelHitboxStudio() {
                     hitboxes={studio.hitboxLayer.hitboxes}
                     activeHitboxId={studio.activeHitboxId}
                     resolution={resolution}
+                    stateLabel={activeAnimationState}
+                    isCustomSet={hasCustomHitboxes}
+                    canDeleteLast={!hasCustomHitboxes}
                     onUpdate={handleUpdateHitbox}
                     onDelete={handleDeleteHitbox}
                     onSelect={setActiveHitbox}
                     onAdd={handleAddHitbox}
+                    onStartCustomSet={handleStartCustomSet}
+                    onRevertToShared={handleRevertToSharedSet}
                   />
                 </div>
-                {projectSprites.length > 1 && (
-                  <div className="property-group">
-                    <button className="btn btn-small btn-ghost" onClick={handleDeleteSprite}>
-                      Delete Sprite
-                    </button>
-                  </div>
-                )}
+                <div className="property-group">
+                  <button className="btn btn-small btn-ghost" onClick={handleDeleteSprite}>
+                    Delete Sprite
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="panel-empty">
                 <span className="empty-icon">📋</span>
-                <p>Select a sprite to view properties</p>
+                <p>Make a sprite in the backpack to start editing</p>
               </div>
             )}
           </aside>

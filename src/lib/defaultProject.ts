@@ -2,25 +2,7 @@ import { CreateProject, ProjectData } from '@/schemas/projectSchemas';
 
 export function createDefaultProjectData(): ProjectData {
   return {
-    sprites: [
-      {
-        id: 'sprite_p1_default',
-        name: 'Player 1',
-        role: 'player_1',
-        resolution: 32,
-        frames: {},
-        hitboxes: [
-          {
-            type: 'hurtbox',
-            shape: 'rectangle',
-            offset_x: 4,
-            offset_y: 4,
-            width: 24,
-            height: 28,
-          },
-        ],
-      },
-    ],
+    sprites: [],
     level_data: {
       grid_width: 32,
       grid_height: 32,

@@ -2143,3 +2143,27 @@ a.studio-tab:hover {
   border: 1px solid var(--line);
   flex-shrink: 0;
 }
+
+.hitbox-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.hitbox-context-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hitbox-delete.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

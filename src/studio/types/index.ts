@@ -83,7 +83,7 @@ export interface AnimationFrame {
 // Hitbox
 // ============================================================================
 
-export type HitboxType = 'terrain' | 'hurtbox' | 'hitbox';
+export type HitboxType = 'terrain' | 'hurtbox' | 'hitbox' | 'interactive';
 
 export interface StudioHitbox {
   id: string;
@@ -102,6 +102,7 @@ export const HITBOX_TYPE_COLORS: Record<HitboxType, string> = {
   terrain: '#22c55e',
   hurtbox: '#3b82f6',
   hitbox: '#ef4444',
+  interactive: '#f97316',
 };
 
 export interface HitboxLayer {
