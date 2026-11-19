@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, useClerk, useUser } from '@clerk/nextjs';
 import { useGameStore } from '@/store/useGameStore';
-import { CreateProject } from '@/schemas/projectSchemas';
+import { createDefaultProject } from '@/lib/defaultProject';
 
 // ============================================================================
 // Types
@@ -64,47 +64,7 @@ export function Navbar() {
 
   // Handle create new project
   const handleCreateNewProject = () => {
-    const defaultProject: CreateProject = {
-      title: 'Untitled Project',
-      description: '',
-      genre: 'Platformer',
-      author_id: user?.id || null,
-      is_published: false,
-      is_template: false,
-      project_data: {
-        sprites: [
-          {
-            id: 'player_1_default',
-            name: 'Player 1',
-            role: 'player_1',
-            resolution: 32,
-            frames: {},
-            hitbox: {
-              shape: 'rectangle',
-              width: 24,
-              height: 32,
-              offsetX: 0,
-              offsetY: 0,
-            },
-          },
-        ],
-        level_data: {
-          width: 10,
-          height: 10,
-          tile_size: 32,
-          tiles: [],
-        },
-        mechanics_config: {
-          player_1: { speed: 200, jump_force: 300, gravity: 800 },
-          player_2: { speed: 200, jump_force: 300, gravity: 800 },
-          win_condition: 'reach_goal',
-        },
-        economy_config: {},
-        audio_config: {},
-        version: '1.0.0',
-      },
-    };
-    createNewProject(defaultProject);
+    createNewProject(createDefaultProject(user?.id || null));
     setActiveTab('art');
     router.push('/art');
   };
@@ -121,7 +81,6 @@ export function Navbar() {
     if (href.startsWith('/play/') && pathname.startsWith('/play/')) return true;
     if (href.startsWith('/art') && pathname.startsWith('/art')) return true;
     if (href.startsWith('/rules') && pathname.startsWith('/rules')) return true;
-    if (href.startsWith('/studio/') && pathname.startsWith('/studio/')) return true;
     
     return false;
   };
@@ -180,7 +139,7 @@ export function Navbar() {
   };
 
   // Guest Sandbox Mode indicator
-  const isInStudio = pathname.startsWith('/studio') || pathname.startsWith('/art') || pathname.startsWith('/rules');
+  const isInStudio = pathname.startsWith('/art') || pathname.startsWith('/rules');
   const showGuestCTA = isLoaded && !isSignedIn && isInStudio;
 
   return (

@@ -23,7 +23,7 @@ const HitboxShape = z.enum(["rectangle", "circle"]);
 type HitboxShape = z.infer<typeof HitboxShape>;
 
 const RectangleHitboxSchema = z.object({
-  type: z.enum(["hurtbox", "hitbox", "terrain"]),
+  type: z.enum(["hurtbox", "hitbox", "terrain", "interactive"]),
   shape: z.literal("rectangle"),
   offset_x: z.number().int().min(0),
   offset_y: z.number().int().min(0),
@@ -32,7 +32,7 @@ const RectangleHitboxSchema = z.object({
 });
 
 const CircleHitboxSchema = z.object({
-  type: z.enum(["hurtbox", "hitbox", "terrain"]),
+  type: z.enum(["hurtbox", "hitbox", "terrain", "interactive"]),
   shape: z.literal("circle"),
   offset_x: z.number().int().min(0),
   offset_y: z.number().int().min(0),
@@ -94,6 +94,7 @@ const SpriteSchema = z.object({
   resolution: Resolution,
   frames: SpriteFramesSchema,
   hitboxes: z.array(HitboxSchema).min(1, "Each sprite must have at least one hitbox"),
+  state_hitboxes: z.record(z.string(), z.array(HitboxSchema)).optional(),
   ai_config: AISchema.optional(),
   thumbnail_url: z.string().url().optional(),
 });
@@ -227,7 +228,7 @@ type AudioConfig = z.infer<typeof AudioConfigSchema>;
 // Project Data Schema (Complete)
 // ============================================================================
 const ProjectDataSchema = z.object({
-  sprites: z.array(SpriteSchema).min(1, "Project must have at least one sprite"),
+  sprites: z.array(SpriteSchema),
   level_data: LevelDataSchema,
   mechanics_config: MechanicsConfigSchema,
   economy_config: EconomyConfigSchema.optional().default({}),
@@ -278,7 +279,8 @@ type Project = Omit<z.infer<typeof ProjectSchema>, "author_id"> & {
   author_id: string | null;
 };
 
-// Schema for creating a new project (without server-generated fields)
+// Schema for creating new projects (without server-generated fields).
+// author_id is nullable because guest drafts and remixes are owned on save.
 const CreateProjectSchema = ProjectSchema.omit({
   id: true,
   play_count: true,
@@ -290,6 +292,8 @@ const CreateProjectSchema = ProjectSchema.omit({
   thumbnail_url: true,
   is_published: true,
   is_template: true,
+}).extend({
+  author_id: z.string().min(1).nullable(),
 });
 
 type CreateProject = z.infer<typeof CreateProjectSchema>;

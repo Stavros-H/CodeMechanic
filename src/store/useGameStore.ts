@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Project, CreateProject, Profile } from '@/schemas/projectSchemas';
+import { Project, CreateProject, Profile, Sprite } from '@/schemas/projectSchemas';
 
 // ============================================================================
 // Types
@@ -31,6 +31,9 @@ type ActionTypes = {
   setCurrentProject: (project: Project | null) => void;
   createNewProject: (project: CreateProject) => void;
   updateProject: (updates: Partial<Project>) => void;
+  addSprite: (sprite: Sprite) => void;
+  updateSprite: (sprite: Sprite) => void;
+  removeSprite: (spriteId: string) => void;
   clearProject: () => void;
   
   // Dirty state
@@ -140,6 +143,55 @@ export const useGameStore = create<GameStore>()(
             isDirty: true,
           });
         }
+      },
+
+      addSprite: (sprite) => {
+        const current = get().currentProject;
+        if (!current) return;
+        set({
+          currentProject: {
+            ...current,
+            project_data: {
+              ...current.project_data,
+              sprites: [...current.project_data.sprites, sprite],
+            },
+          },
+          isDirty: true,
+        });
+      },
+
+      updateSprite: (sprite) => {
+        const current = get().currentProject;
+        if (!current) return;
+        set({
+          currentProject: {
+            ...current,
+            project_data: {
+              ...current.project_data,
+              sprites: current.project_data.sprites.map((s) =>
+                s.id === sprite.id ? sprite : s
+              ),
+            },
+          },
+          isDirty: true,
+        });
+      },
+
+      removeSprite: (spriteId) => {
+        const current = get().currentProject;
+        if (!current) return;
+        set({
+          currentProject: {
+            ...current,
+            project_data: {
+              ...current.project_data,
+              sprites: current.project_data.sprites.filter(
+                (s) => s.id !== spriteId
+              ),
+            },
+          },
+          isDirty: true,
+        });
       },
 
       clearProject: () => {

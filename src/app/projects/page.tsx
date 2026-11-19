@@ -71,7 +71,7 @@ export default function MyProjects() {
           </div>
           <button
             className="btn btn-primary"
-            onClick={() => navigateTo('/studio/art')}
+            onClick={() => navigateTo('/art')}
           >
             <span className="btn-icon">+</span>
             <span>Create New Project</span>
@@ -122,13 +122,13 @@ export default function MyProjects() {
                   </button>
                   <button
                     className="action-btn"
-                    onClick={() => navigateTo(`/studio/art?edit=${project.id}`)}
+                    onClick={() => navigateTo(`/art?edit=${project.id}`)}
                   >
                     Edit
                   </button>
                   <button
                     className="action-btn"
-                    onClick={() => navigateTo(`/studio/rules?edit=${project.id}`)}
+                    onClick={() => navigateTo(`/rules?edit=${project.id}`)}
                   >
                     Configure
                   </button>
@@ -148,7 +148,7 @@ export default function MyProjects() {
             <p>Create your first game project to get started!</p>
             <button
               className="btn btn-primary"
-              onClick={() => navigateTo('/studio/art')}
+              onClick={() => navigateTo('/art')}
             >
               <span className="btn-icon">+</span>
               <span>Create New Project</span>
