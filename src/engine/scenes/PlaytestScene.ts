@@ -60,6 +60,21 @@ export class PlaytestScene extends Phaser.Scene {
   }
 
   create(data: PhaserSceneData): void {
+    // A Phaser Scene instance is reused when restarted. Reset its runtime
+    // references because the previous display list and physics bodies are gone.
+    this.players.clear();
+    this.enemies = [];
+    this.hazards = [];
+    this.pickups = [];
+    this.goals = [];
+    this.tiles = [];
+    this.isPaused = false;
+    this.gameWon = false;
+    this.gameLost = false;
+    this.debugText = undefined;
+    this.fpsText = undefined;
+    this.entityCountText = undefined;
+
     this.gameConfig = data.gameConfig;
 
     this.gameManager.createFallbackTexture(this);

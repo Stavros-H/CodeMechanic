@@ -35,6 +35,7 @@ export class StudioPreviewScene extends Phaser.Scene {
   }
 
   create(data: PhaserSceneData): void {
+    this.previewEntities = [];
     this.gameConfig = data.gameConfig;
 
     this.gameManager.createFallbackTexture(this);
