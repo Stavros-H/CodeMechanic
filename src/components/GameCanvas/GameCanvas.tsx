@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '@/store/useGameStore';
 import type { PhaserGameManager, GameSceneType } from '@/engine';
 import type { GameConfig } from '@/types';
+import { projectDataToGameConfig } from '@/lib/gameConfig';
 
 // ============================================================================
 // Types
@@ -109,19 +110,24 @@ export function GameCanvas({
     };
   }, [sceneType]);
 
-  // Handle project changes
+  // Handle project changes: only restart when the changed project is the one
+  // this canvas is playing (covers studio edits while playtesting).
   useEffect(() => {
     if (!isInitialized || !currentProject) return;
+
+    const requestedId =
+      typeof sceneData?.projectId === 'string' ? sceneData.projectId : null;
+    if (requestedId && currentProject.id !== requestedId) return;
 
     // Restart scene with new project data
     const manager = managerRef.current;
     if (!manager) return;
     const game = manager.getGame();
-    
+
     if (game && !isDirty) {
-      // Reload scene with new config
+      // Reload scene with the adapted config
       manager.startScene(sceneType, {
-        gameConfig: currentProject.project_data,
+        gameConfig: projectDataToGameConfig(currentProject.project_data),
         ...latestPropsRef.current.sceneData,
       });
     }
