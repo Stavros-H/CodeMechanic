@@ -197,13 +197,13 @@ export class PhaserGameManager {
       return;
     }
 
-    this.currentSceneType = sceneType;
-
-    // Destroy existing scene if it exists
-    if (this.currentScene) {
+    const previousSceneType = this.currentSceneType;
+    if (this.currentScene && previousSceneType !== sceneType) {
       this.currentScene.scene.stop();
       this.currentScene = null;
     }
+
+    this.currentSceneType = sceneType;
 
     // Create and start the new scene
     switch (sceneType) {
@@ -227,6 +227,13 @@ export class PhaserGameManager {
   private startBootScene(data?: PhaserSceneData): void {
     if (!this.gameInstance) return;
 
+    const existingScene = this.scenes.get('boot');
+    if (existingScene) {
+      this.gameInstance.scene.start('boot', data);
+      this.currentScene = existingScene;
+      return;
+    }
+
     const bootScene = new BootScene();
     this.gameInstance.scene.add('boot', bootScene, true, data);
     this.currentScene = bootScene;
@@ -239,6 +246,13 @@ export class PhaserGameManager {
   private startPlaytestScene(data?: PhaserSceneData): void {
     if (!this.gameInstance) return;
 
+    const existingScene = this.scenes.get('playtest');
+    if (existingScene) {
+      this.gameInstance.scene.start('playtest', data);
+      this.currentScene = existingScene;
+      return;
+    }
+
     const playtestScene = new PlaytestScene();
     this.gameInstance.scene.add('playtest', playtestScene, true, data);
     this.currentScene = playtestScene;
@@ -250,6 +264,13 @@ export class PhaserGameManager {
    */
   private startStudioPreviewScene(data?: PhaserSceneData): void {
     if (!this.gameInstance) return;
+
+    const existingScene = this.scenes.get('studio-preview');
+    if (existingScene) {
+      this.gameInstance.scene.start('studio-preview', data);
+      this.currentScene = existingScene;
+      return;
+    }
 
     const studioScene = new StudioPreviewScene();
     this.gameInstance.scene.add('studio-preview', studioScene, true, data);

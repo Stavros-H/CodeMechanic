@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Project, CreateProject, Profile, Sprite } from '@/schemas/projectSchemas';
+import {
+  Project,
+  CreateProject,
+  Profile,
+  Sprite,
+  MechanicsConfig as MechanicsConfigType,
+  EconomyConfig as EconomyConfigType,
+  LevelData,
+} from '@/schemas/projectSchemas';
 
 // ============================================================================
 // Types
@@ -16,7 +24,7 @@ type AuthState = {
 type GameState = {
   currentProject: Project | null;
   isDirty: boolean;
-  activeTab: 'art' | 'rules' | 'play' | 'hub' | 'explore';
+  activeTab: 'art' | 'rules' | 'level' | 'play' | 'hub' | 'explore';
   activeEntityId: string | null;
   remixSourceId: string | null; // Track which project was remixed
 };
@@ -34,6 +42,9 @@ type ActionTypes = {
   addSprite: (sprite: Sprite) => void;
   updateSprite: (sprite: Sprite) => void;
   removeSprite: (spriteId: string) => void;
+  updateMechanicsConfig: (config: Partial<MechanicsConfigType>) => void;
+  updateEconomyConfig: (config: Partial<EconomyConfigType>) => void;
+  updateLevelData: (levelData: LevelData) => void;
   clearProject: () => void;
   
   // Dirty state
@@ -188,6 +199,57 @@ export const useGameStore = create<GameStore>()(
               sprites: current.project_data.sprites.filter(
                 (s) => s.id !== spriteId
               ),
+            },
+          },
+          isDirty: true,
+        });
+      },
+
+      updateMechanicsConfig: (config) => {
+        const current = get().currentProject;
+        if (!current) return;
+        set({
+          currentProject: {
+            ...current,
+            project_data: {
+              ...current.project_data,
+              mechanics_config: {
+                ...current.project_data.mechanics_config,
+                ...config,
+              },
+            },
+          },
+          isDirty: true,
+        });
+      },
+
+      updateEconomyConfig: (config) => {
+        const current = get().currentProject;
+        if (!current) return;
+        set({
+          currentProject: {
+            ...current,
+            project_data: {
+              ...current.project_data,
+              economy_config: {
+                ...current.project_data.economy_config,
+                ...config,
+              },
+            },
+          },
+          isDirty: true,
+        });
+      },
+
+      updateLevelData: (levelData) => {
+        const current = get().currentProject;
+        if (!current) return;
+        set({
+          currentProject: {
+            ...current,
+            project_data: {
+              ...current.project_data,
+              level_data: levelData,
             },
           },
           isDirty: true,

@@ -117,6 +117,17 @@ const WaveSpawnerSchema = z.object({
 type WaveSpawner = z.infer<typeof WaveSpawnerSchema>;
 
 // ============================================================================
+// Sprite Placement Schema (backpack sprites pinned into a level)
+// ============================================================================
+const SpritePlacementSchema = z.object({
+  sprite_id: z.string().min(1),
+  x: z.number().int(),
+  y: z.number().int(),
+});
+
+type SpritePlacement = z.infer<typeof SpritePlacementSchema>;
+
+// ============================================================================
 // Level Data Schema
 // ============================================================================
 const TileType = z.number().int().min(0);
@@ -138,6 +149,7 @@ const LevelDataSchema = z.object({
     x: z.number().int(),
     y: z.number().int(),
   })).optional().default([]),
+  sprite_placements: z.array(SpritePlacementSchema).optional().default([]),
 });
 
 type LevelData = z.infer<typeof LevelDataSchema>;
@@ -167,12 +179,29 @@ const WinCondition = z.enum([
 
 type WinCondition = z.infer<typeof WinCondition>;
 
+// ============================================================================
+// Weapon Config Schema (declarative weapon properties for player entities)
+// ============================================================================
+const WeaponAttackType = z.enum(["None", "Melee", "SpawnProjectile"]);
+
+type WeaponAttackType = z.infer<typeof WeaponAttackType>;
+
+const WeaponConfigSchema = z.object({
+  attack_type: WeaponAttackType.default("None"),
+  fire_rate_sec: z.number().min(0.05).max(10).default(0.25),
+  recoil_x: z.number().min(-1000).max(1000).default(0),
+  bullet_sprite_id: z.string().min(1).nullable().default(null),
+});
+
+type WeaponConfig = z.infer<typeof WeaponConfigSchema>;
+
 const MechanicsConfigSchema = z.object({
   player_1_config: PlayerConfigSchema.default({}),
   player_2_config: PlayerConfigSchema.optional(),
   win_condition: WinCondition.default("ReachGoal"),
   score_target: z.number().int().min(1).optional(),
   survive_time_sec: z.number().int().min(1).optional(),
+  weapon_config: WeaponConfigSchema.optional(),
 });
 
 type MechanicsConfig = z.infer<typeof MechanicsConfigSchema>;
@@ -341,8 +370,10 @@ export {
   SpriteFramesSchema,
   AISchema,
   WaveSpawnerSchema,
+  SpritePlacementSchema,
   LevelDataSchema,
   PlayerConfigSchema,
+  WeaponConfigSchema,
   MechanicsConfigSchema,
   EconomyConfigSchema,
   AudioEffectSchema,
@@ -357,8 +388,10 @@ export {
   type Hitbox,
   type Sprite,
   type WaveSpawner,
+  type SpritePlacement,
   type LevelData,
   type PlayerConfig,
+  type WeaponConfig as WeaponConfigType,
   type MechanicsConfig,
   type EconomyConfig,
   type AudioEffect,

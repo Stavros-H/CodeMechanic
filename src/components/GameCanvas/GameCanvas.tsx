@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '@/store/useGameStore';
 import type { PhaserGameManager, GameSceneType } from '@/engine';
 import type { GameConfig } from '@/types';
+import { projectDataToGameConfig } from '@/lib/gameConfig';
 
 // ============================================================================
 // Types
@@ -47,10 +48,15 @@ export function GameCanvas({
 }: GameCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const managerRef = useRef<PhaserGameManager | null>(null);
+  const latestPropsRef = useRef({ config, sceneData, onReady, onError });
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   
   const { currentProject, isDirty } = useGameStore();
+
+  useEffect(() => {
+    latestPropsRef.current = { config, sceneData, onReady, onError };
+  }, [config, sceneData, onReady, onError]);
 
   // Initialize Phaser on mount
   useEffect(() => {
@@ -63,28 +69,32 @@ export function GameCanvas({
         if (cancelled || !canvasRef.current) return;
 
         try {
+          const latestProps = latestPropsRef.current;
           managerRef.current = manager;
           manager.initialize(canvasRef.current, {}, sceneType);
 
-          if (config) {
-            manager.startScene(sceneType, { gameConfig: config, ...sceneData });
+          if (latestProps.config) {
+            manager.startScene(sceneType, {
+              gameConfig: latestProps.config,
+              ...latestProps.sceneData,
+            });
           } else {
-            manager.startScene(sceneType, sceneData);
+            manager.startScene(sceneType, latestProps.sceneData);
           }
 
           setIsInitialized(true);
-          onReady?.(manager);
+          latestProps.onReady?.(manager);
         } catch (err) {
           const errorObj = err instanceof Error ? err : new Error(String(err));
           setError(errorObj);
-          onError?.(errorObj);
+          latestPropsRef.current.onError?.(errorObj);
         }
       })
       .catch((err: unknown) => {
         if (cancelled) return;
         const errorObj = err instanceof Error ? err : new Error(String(err));
         setError(errorObj);
-        onError?.(errorObj);
+        latestPropsRef.current.onError?.(errorObj);
       });
 
     // Cleanup on unmount
@@ -98,25 +108,30 @@ export function GameCanvas({
         console.error('Error destroying game:', err);
       }
     };
-  }, [config, sceneType, sceneData, onReady, onError]);
+  }, [sceneType]);
 
-  // Handle project changes
+  // Handle project changes: only restart when the changed project is the one
+  // this canvas is playing (covers studio edits while playtesting).
   useEffect(() => {
     if (!isInitialized || !currentProject) return;
+
+    const requestedId =
+      typeof sceneData?.projectId === 'string' ? sceneData.projectId : null;
+    if (requestedId && currentProject.id !== requestedId) return;
 
     // Restart scene with new project data
     const manager = managerRef.current;
     if (!manager) return;
     const game = manager.getGame();
-    
+
     if (game && !isDirty) {
-      // Reload scene with new config
+      // Reload scene with the adapted config
       manager.startScene(sceneType, {
-        gameConfig: currentProject.project_data,
-        ...sceneData,
+        gameConfig: projectDataToGameConfig(currentProject.project_data),
+        ...latestPropsRef.current.sceneData,
       });
     }
-  }, [currentProject, isDirty, sceneType, sceneData, isInitialized]);
+  }, [currentProject, isDirty, sceneType, isInitialized]);
 
   // Handle errors
   if (error) {

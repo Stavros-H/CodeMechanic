@@ -27,6 +27,14 @@ export type GameConfig = ProjectData & {
   winCondition?: string;
 };
 
+export type EntityAI = {
+  movement?: 'Patrol' | 'DirectChase' | 'Turret' | 'FlyAndHover' | 'PathFollower';
+  target?: 'Player1' | 'Player2' | 'NearestPlayer';
+  attack_style?: 'ContactDamage' | 'RangedProjectile' | 'ProximityBlast';
+  move_speed?: number;
+  currency_drop_value?: number;
+};
+
 export type EntityConfig = {
   role: SchemaEntityRole;
   x?: number;
@@ -37,6 +45,8 @@ export type EntityConfig = {
   health?: number;
   solid?: boolean;
   hitbox?: HitboxConfig;
+  /** Composable AI rules attached to enemy entities (from sprite.ai_config). */
+  ai?: EntityAI;
 };
 
 export type HitboxConfig = Partial<SchemaHitbox> & {
@@ -57,9 +67,10 @@ export type ViewRoute =
   | '/play/:id' 
   | '/art'
   | '/rules'
+  | '/level'
   | '/projects';
 
-export type ViewId = 'hub' | 'explore' | 'play' | 'art' | 'rules';
+export type ViewId = 'hub' | 'explore' | 'play' | 'art' | 'rules' | 'level';
 
 // Navigation types
 export type NavItem = {
