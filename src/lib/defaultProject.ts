@@ -11,6 +11,7 @@ export function createDefaultProjectData(): ProjectData {
       wave_spawners: [],
       player_spawn_points: [],
       goal_positions: [],
+      sprite_placements: [],
     },
     mechanics_config: {
       player_1_config: {

@@ -57,9 +57,10 @@ export type ViewRoute =
   | '/play/:id' 
   | '/art'
   | '/rules'
+  | '/level'
   | '/projects';
 
-export type ViewId = 'hub' | 'explore' | 'play' | 'art' | 'rules';
+export type ViewId = 'hub' | 'explore' | 'play' | 'art' | 'rules' | 'level';
 
 // Navigation types
 export type NavItem = {

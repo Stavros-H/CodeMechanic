@@ -2167,3 +2167,254 @@ a.studio-tab:hover {
   opacity: 0.3;
   cursor: not-allowed;
 }
+
+/* ============================================================================
+   Phase 5 — Level & Wave Painter
+   ============================================================================ */
+
+.view-level {
+  background: var(--paper);
+}
+
+.level-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr 300px;
+  gap: 1rem;
+  padding: 1rem;
+  min-height: calc(100vh - 200px);
+}
+
+/* Left pane: backpack + tools */
+.level-tools {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.level-tools .toolbar-btn {
+  justify-content: flex-start;
+}
+
+.placement-count {
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Center pane: grid painter */
+.level-canvas-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.level-canvas-wrap {
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  flex: 1;
+  max-height: calc(100vh - 320px);
+}
+
+.level-grid-canvas {
+  display: block;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.level-canvas-hint {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.zoom-label {
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Right pane: settings + spawners */
+.level-side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.level-side-panel .config-card {
+  padding: 1rem;
+}
+
+.wave-spawner-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.wave-spawner-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.wave-spawner-row select,
+.wave-spawner-row input[type="number"] {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 0.85rem;
+}
+
+.wave-spawner-row label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.wave-spawner-row input[type="number"] {
+  width: 5.5rem;
+}
+
+.wave-spawner-remove {
+  justify-self: end;
+  color: var(--danger, #ef4444);
+}
+
+.wave-spawner-row select:focus,
+.wave-spawner-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.placement-summary {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.placement-summary li::before {
+  content: '•';
+  color: var(--accent);
+  margin-right: 0.5rem;
+}
+
+/* Empty states */
+.level-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 200px);
+  padding: 2rem;
+}
+
+.level-empty-state .empty-state {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* AI tab extras */
+.ai-builder-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.5rem;
+  max-width: 900px;
+}
+
+.ai-rule-builder {
+  max-width: 900px;
+}
+
+.ai-rule-group {
+  margin-bottom: 1rem;
+}
+
+.ai-option-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.config-hint {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 0.5rem 0 0 0;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.card-title-row h3 {
+  margin: 0 0 1rem 0;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.toggle-row input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
+.ai-preview {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 0.85rem;
+}
+
+.ai-preview-label {
+  color: var(--muted);
+}
+
+@media (max-width: 1100px) {
+  .level-layout {
+    grid-template-columns: 200px 1fr;
+  }
+  .level-side-panel {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 800px) {
+  .level-layout {
+    grid-template-columns: 1fr;
+  }
+  .ai-builder-layout {
+    grid-template-columns: 1fr;
+  }
+}
